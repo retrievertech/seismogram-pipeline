@@ -18,12 +18,6 @@ import matplotlib.pyplot as plt
 
 out_dir = "out"
 
-def get_image(filename):
-  timeStart("read image")
-  grayscale_image = misc.imread(filename, flatten = True)
-  timeEnd("read image")
-  return grayscale_image
-
 def get_boundary(grayscale_image, debug = False):
   timeStart("threshold image")
   threshold_value = threshold_otsu(grayscale_image)
