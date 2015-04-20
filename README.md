@@ -2,7 +2,7 @@
 
 ## Directory structure
 - `src/` the meat of the repo; image processing scripts
-- `lib/` 3rd party code
+- `util/` useful utilities
 - `/` command line entry points for the various scripts in `src/`
 
 ## Dependencies
