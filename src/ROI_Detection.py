@@ -158,11 +158,4 @@ def get_roi_corners(lines, debug = False, image = None):
     misc.imsave(out_dir+"/roi_corners.png", image)
 
   return corners
-
-# for testing
-timeStart("DONE", immediate=False)
-image = get_image("in/dummy-seismo-small.png")
-boundary = get_boundary(image, debug=True)
-lines = get_box_lines(boundary, debug=True)
-get_roi_corners(lines, debug=True, image=image)
-timeEnd("DONE", immediate=False)
+  
