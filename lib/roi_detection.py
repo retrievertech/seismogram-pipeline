@@ -148,6 +148,7 @@ def get_roi_corners(lines, debug = False, image = None):
     "bottom_left": seg_intersect(lines["bottom"], lines["left"]),
     "bottom_right": seg_intersect(lines["bottom"], lines["right"])
   }
+  corners = { corner_name: coord.astype(int) for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
   if debug:
