@@ -1,4 +1,4 @@
-from util.timer import timeStart, timeEnd
+from timer import timeStart, timeEnd
 
 timeStart("import libs")
 import numpy as np
@@ -11,7 +11,7 @@ from scipy.ndimage.measurements import label
 from skimage.transform import hough_line, hough_line_peaks, probabilistic_hough_line
 import skimage.draw as skidraw
 
-from util.line_intersection import seg_intersect
+from line_intersection import seg_intersect
 timeEnd("import libs")
 
 import matplotlib.pyplot as plt

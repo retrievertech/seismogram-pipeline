@@ -1,6 +1,6 @@
-from util.timer import timeStart, timeEnd
-from util.load_image import get_image
-from src.roi_detection import get_boundary, get_box_lines, get_roi_corners
+from lib.timer import timeStart, timeEnd
+from lib.load_image import get_image
+from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners
 
 # for testing
 timeStart("DONE", immediate=False)
