@@ -143,10 +143,10 @@ def get_box_lines(boundary, debug = False):
 def get_roi_corners(lines, debug = False, image = None):
   timeStart("find intersections")
   corners = {
-    "top_left": seg_intersect(lines["top"][0], lines["top"][1], lines["left"][0], lines["left"][1]),
-    "top_right": seg_intersect(lines["top"][0], lines["top"][1], lines["right"][0], lines["right"][1]),
-    "bottom_left": seg_intersect(lines["bottom"][0], lines["bottom"][1], lines["left"][0], lines["left"][1]),
-    "bottom_right": seg_intersect(lines["bottom"][0], lines["bottom"][1], lines["right"][0], lines["right"][1])
+    "top_left": seg_intersect(lines["top"], lines["left"]),
+    "top_right": seg_intersect(lines["top"], lines["right"]),
+    "bottom_left": seg_intersect(lines["bottom"], lines["left"]),
+    "bottom_right": seg_intersect(lines["bottom"], lines["right"])
   }
   timeEnd("find intersections")
 
