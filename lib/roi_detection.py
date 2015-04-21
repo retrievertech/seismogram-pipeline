@@ -12,9 +12,10 @@ from skimage.transform import hough_line, hough_line_peaks, probabilistic_hough_
 import skimage.draw as skidraw
 
 from line_intersection import seg_intersect
-timeEnd("import libs")
 
 import matplotlib.pyplot as plt
+import geojson
+timeEnd("import libs")
 
 debug_dir = "debug"
 
@@ -158,4 +159,11 @@ def get_roi_corners(lines, debug = False, image = None):
     misc.imsave(debug_dir+"/roi_corners.png", image)
 
   return corners
-  
+
+def save_corners_as_geojson(corners, filepath):
+  print corners
+  newPolygon = geojson.Polygon([tuple(corners["top_left"]), tuple(corners["top_right"]), tuple(corners["bottom_right"]), tuple(corners["bottom_left"]), tuple(corners["top_left"])])
+  newFeature = geojson.Feature(geometry = newPolygon)
+  print "Saving to ", filepath
+  with open(filepath, 'w') as outfile:
+    geojson.dump(newFeature, outfile)
