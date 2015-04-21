@@ -3,6 +3,7 @@
 ## Directory structure
 - `lib/` the meat of the repo: image processing scripts and utilities
 - `/` command line entry points for the various scripts in `lib/`
+- `/in` sample input files
 
 ## Dependencies
 
