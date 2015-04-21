@@ -1,9 +1,8 @@
 # seismogram-pipeline
 
 ## Directory structure
-- `src/` the meat of the repo; image processing scripts
-- `util/` useful utilities
-- `/` command line entry points for the various scripts in `src/`
+- `lib/` the meat of the repo: image processing scripts and utilities
+- `/` command line entry points for the various scripts in `lib/`
 
 ## Dependencies
 
