@@ -14,4 +14,9 @@ You'll also need [geojson](https://pypi.python.org/pypi/geojson/):
 pip install geojson
 ```
 
+and [docopt](https://github.com/docopt/docopt):
+```
+pip install docopt==0.6.1
+```
+
 There may eventually be Netlogo, MATLAB, or javascript files in this repository.

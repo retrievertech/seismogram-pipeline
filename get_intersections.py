@@ -1,17 +1,30 @@
-#!/usr/bin/python
+"""
+Description:
+  Calculates intersections in a black and white image and
+  saves a geojson FeatureCollection of features with Point
+  geometries and 'radius' properties.
 
-import argparse
+Usage:
+  get_intersections.py --thresh-image <filename> --output <filename>
+  get_intersections.py -h | --help
 
-parser = argparse.ArgumentParser(description=
-  "Calculates intersections in a black and white "
-  "image and saves as a geojson FeatureCollection "
-  "of features with Point geometries and 'radius' properties.")
-parser.add_argument("--thresh-image", required=True, help="black and white input image filename")
-parser.add_argument("--output", required=True, help="output geojson filename")
-args = parser.parse_args()
+Options:
+  -h --help                  Show this screen.
+  --thresh-image <filename>  Filename of black and white input image.
+  --output <filename>        Filename of geojson output.
 
+"""
 
-from src.intersection_detection import find_intersections_from_file_path
+from docopt import docopt
 
-intersections = find_intersections_from_file_path(args.thresh_image)
-intersections.exportAsGeoJSON(args.output)
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+    in_file = arguments["--thresh-image"]
+    out_file = arguments["--output"]
+
+    if (in_file and out_file):
+      from src.intersection_detection import find_intersections_from_file_path
+      intersections = find_intersections_from_file_path(in_file)
+      intersections.exportAsGeoJSON(out_file)
+    else:
+      print(arguments)
