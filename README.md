@@ -9,7 +9,7 @@
 
 The python scripts are written for Python 2.7. An easy way to install most of the dependencies is with [Anaconda](http://continuum.io/downloads).
 
-You'll also need [geojson](https://pypi.python.org/pypi/geojson/):
+You'll also need [geojson](https://github.com/frewsxcv/python-geojson):
 ```
 pip install geojson
 ```
