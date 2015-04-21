@@ -16,7 +16,7 @@ timeEnd("import libs")
 
 import matplotlib.pyplot as plt
 
-out_dir = "out"
+debug_dir = "debug"
 
 def get_boundary(grayscale_image, debug = False):
   timeStart("threshold image")
@@ -55,10 +55,10 @@ def get_boundary(grayscale_image, debug = False):
   timeEnd("mask region of interest")
 
   if debug:
-    misc.imsave(out_dir+"/black_and_white_image.png", black_and_white_image)
-    misc.imsave(out_dir+"/opened_image.png", opened_image)
-    misc.imsave(out_dir+"/image_boundaries.png", image_boundaries)
-    misc.imsave(out_dir+"/region_of_interest_boundary.png", region_of_interest_boundary)
+    misc.imsave(debug_dir+"/black_and_white_image.png", black_and_white_image)
+    misc.imsave(debug_dir+"/opened_image.png", opened_image)
+    misc.imsave(debug_dir+"/image_boundaries.png", image_boundaries)
+    misc.imsave(debug_dir+"/region_of_interest_boundary.png", region_of_interest_boundary)
 
   return region_of_interest_boundary
 
@@ -135,7 +135,7 @@ def get_box_lines(boundary, debug = False):
     plt.subplot(224)
     plot_lines(image_regions["bottom"], hough_lines["bottom"], longest_lines["bottom"])
 
-    plt.savefig(out_dir+"/hough_peaks.png")
+    plt.savefig(debug_dir+"/hough_peaks.png")
 
   return longest_lines
 
@@ -155,7 +155,7 @@ def get_roi_corners(lines, debug = False, image = None):
     for corner_name in inner_circles:
       image[outer_circles[corner_name]] = 0
       image[inner_circles[corner_name]] = 255
-    misc.imsave(out_dir+"/roi_corners.png", image)
+    misc.imsave(debug_dir+"/roi_corners.png", image)
 
   return corners
   
