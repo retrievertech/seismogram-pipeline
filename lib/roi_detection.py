@@ -161,7 +161,6 @@ def get_roi_corners(lines, debug = False, image = None):
   return corners
 
 def save_corners_as_geojson(corners, filepath):
-  print corners
   newPolygon = geojson.Polygon([tuple(corners["top_left"]), tuple(corners["top_right"]), tuple(corners["bottom_right"]), tuple(corners["bottom_left"]), tuple(corners["top_left"])])
   newFeature = geojson.Feature(geometry = newPolygon)
   print "Saving to ", filepath
