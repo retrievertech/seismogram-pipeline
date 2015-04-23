@@ -63,8 +63,8 @@ def get_boundary(grayscale_image, debug = False):
 
   return region_of_interest_boundary
 
-def get_hough_lines(image, minAngle, maxAngle):
-  angles = np.deg2rad(np.arange(minAngle, maxAngle, 1))
+def get_hough_lines(image, min_angle, max_angle):
+  angles = np.deg2rad(np.arange(min_angle, max_angle, 1))
   hough, angles, distances = hough_line(image, angles)
   peak_hough, peak_angles, peak_distances = hough_line_peaks(hough, angles, distances, num_peaks = 50, threshold = 0.5*np.amax(hough), min_distance = 5, min_angle = 5)
   lines = probabilistic_hough_line(image, theta = peak_angles, line_gap = 305, line_length = 7)
@@ -104,10 +104,10 @@ def get_box_lines(boundary, debug = False):
 
   timeStart("get hough lines")
   hough_lines = {
-    "left": np.array(get_hough_lines(image_regions["left"], minAngle = -10, maxAngle = 10)),
-    "right": np.array(get_hough_lines(image_regions["right"], minAngle = -10, maxAngle = 10)),
-    "top": np.array(get_hough_lines(image_regions["top"], minAngle = -120, maxAngle = 70)),
-    "bottom": np.array(get_hough_lines(image_regions["bottom"], minAngle = -120, maxAngle = 70))
+    "left": np.array(get_hough_lines(image_regions["left"], min_angle = -10, max_angle = 10)),
+    "right": np.array(get_hough_lines(image_regions["right"], min_angle = -10, max_angle = 10)),
+    "top": np.array(get_hough_lines(image_regions["top"], min_angle = -120, max_angle = 70)),
+    "bottom": np.array(get_hough_lines(image_regions["bottom"], min_angle = -120, max_angle = 70))
   }
   timeEnd("get hough lines")
 
@@ -148,12 +148,13 @@ def get_roi_corners(lines, debug = False, image = None):
     "bottom_left": seg_intersect(lines["bottom"], lines["left"]),
     "bottom_right": seg_intersect(lines["bottom"], lines["right"])
   }
-  corners = { corner_name: coord.astype(int) for corner_name, coord in corners.iteritems() }
+  # turn corners into tuples of the form (y, x), where y and x are integers
+  corners = { corner_name: tuple(coord.astype(int))[::-1] for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
   if debug:
-    inner_circles = { corner_name: skidraw.circle(corner[1], corner[0], 10) for corner_name, corner in corners.iteritems() }
-    outer_circles = { corner_name: skidraw.circle(corner[1], corner[0], 50) for corner_name, corner in corners.iteritems() }
+    inner_circles = { corner_name: skidraw.circle(corner[0], corner[1], 10) for corner_name, corner in corners.iteritems() }
+    outer_circles = { corner_name: skidraw.circle(corner[0], corner[1], 50) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:
       image[outer_circles[corner_name]] = 0
       image[inner_circles[corner_name]] = 255
@@ -162,8 +163,9 @@ def get_roi_corners(lines, debug = False, image = None):
   return corners
 
 def save_corners_as_geojson(corners, filepath):
-  newPolygon = geojson.Polygon([tuple(corners["top_left"]), tuple(corners["top_right"]), tuple(corners["bottom_right"]), tuple(corners["bottom_left"]), tuple(corners["top_left"])])
+  timeStart("saving to "+ filepath)
+  newPolygon = geojson.Polygon([corners["top_left"], corners["top_right"], corners["bottom_right"], corners["bottom_left"], corners["top_left"]])
   newFeature = geojson.Feature(geometry = newPolygon)
-  print "Saving to ", filepath
   with open(filepath, 'w') as outfile:
     geojson.dump(newFeature, outfile)
+  timeEnd("saving to "+ filepath)
