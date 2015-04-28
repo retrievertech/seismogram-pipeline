@@ -11,7 +11,4 @@ def mask_image(image, polygon_feature):
   rr, cc = polygon(y, x)
   mask = np.zeros(image.shape)
   mask[rr, cc] = 1
-
-  # misc.imsave("masked_image.png", masked_image)
-
   return mask * image
