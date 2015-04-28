@@ -31,7 +31,7 @@ if __name__ == '__main__':
       timeStart("DONE", immediate=False)
       image = get_image(in_file)
       boundary = get_boundary(image, debug=debug)
-      lines = get_box_lines(boundary, debug=debug)
+      lines = get_box_lines(boundary, debug=debug, image=image)
       corners = get_roi_corners(lines, debug=debug, image=image)
       save_corners_as_geojson(corners, out_file)
       timeEnd("DONE", immediate=False)

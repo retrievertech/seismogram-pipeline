@@ -10,6 +10,7 @@ from scipy.ndimage.measurements import label
 
 from skimage.transform import hough_line, hough_line_peaks, probabilistic_hough_line
 import skimage.draw as skidraw
+from skimage.color import gray2rgb
 
 from line_intersection import seg_intersect
 
@@ -70,26 +71,10 @@ def get_hough_lines(image, min_angle, max_angle):
   lines = probabilistic_hough_line(image, theta = peak_angles, line_gap = 305, line_length = 7)
   return lines
 
-def plot_lines(image, lines, longest_line):
-  plt.imshow(image, cmap = plt.cm.gray)
-  max_len = 0
-  for line in lines:
-    x_vals = line[..., 0]
-    y_vals = line[..., 1]
-    plt.plot(x_vals, y_vals, linewidth = 2, color = 'green')
-
-    # Plot beginnings and ends of lines
-    # plt.plot(x_vals[0], y_vals[0], 'ys')
-    # plt.plot(x_vals[1], y_vals[1], 'rs')
-
-  # highlight the longest line segment in RED.
-  plt.plot([longest_line[0][0], longest_line[1][0]], [longest_line[0][1], longest_line[1][1]], linewidth = 2, color = 'red')
-  plt.autoscale(tight = True)
-
 def get_line_length(line):
   return np.linalg.norm(np.subtract(line[1], line[0]))
 
-def get_box_lines(boundary, debug = False):
+def get_box_lines(boundary, debug = False, image = None):
   height, width = boundary.shape
   [half_width, half_height] = np.floor([0.5 * width, 0.5 * height]).astype(int)
 
@@ -124,19 +109,11 @@ def get_box_lines(boundary, debug = False):
   longest_lines["right"] += [half_width, 0]
 
   if debug:
-    plt.subplot(221)
-    plot_lines(image_regions["left"], hough_lines["left"], longest_lines["left"])
-
-    plt.subplot(222)
-    plot_lines(image_regions["right"], hough_lines["right"], longest_lines["right"])
-
-    plt.subplot(223)
-    plot_lines(image_regions["top"], hough_lines["top"], longest_lines["top"])
-
-    plt.subplot(224)
-    plot_lines(image_regions["bottom"], hough_lines["bottom"], longest_lines["bottom"])
-
-    plt.savefig(debug_dir+"/hough_peaks.png")
+    image = gray2rgb(image)
+    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for name, line in longest_lines.iteritems() ]
+    for line in line_coords:
+      image[line] = [255, 0, 0]
+    misc.imsave(debug_dir+"/longest_hough_lines.png", image)
 
   return longest_lines
 
