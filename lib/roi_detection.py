@@ -14,6 +14,7 @@ from skimage.color import gray2rgb
 
 from line_intersection import seg_intersect
 from hough_lines import get_hough_lines as do_hough
+from threshold_image import threshold_image
 
 import matplotlib.pyplot as plt
 import geojson
@@ -23,8 +24,7 @@ debug_dir = "debug"
 
 def get_boundary(grayscale_image, debug = False):
   timeStart("threshold image")
-  threshold_value = threshold_otsu(grayscale_image)
-  black_and_white_image = (grayscale_image > threshold_value)
+  black_and_white_image = threshold_image(grayscale_image)
   timeEnd("threshold image")
 
   timeStart("morphological open image")
