@@ -112,7 +112,9 @@ def get_box_lines(boundary, debug = False, image = None):
     image = gray2rgb(image)
     line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for name, line in longest_lines.iteritems() ]
     for line in line_coords:
-      image[line] = [255, 0, 0]
+      rr, cc = line
+      mask = (rr >= 0) & (rr < image.shape[0]) & (cc >= 0) & (cc < image.shape[1])
+      image[rr[mask], cc[mask]] = [255, 0, 0]
     misc.imsave(debug_dir+"/longest_hough_lines.png", image)
 
   return longest_lines
