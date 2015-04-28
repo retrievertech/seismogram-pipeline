@@ -10,8 +10,13 @@ def get_hough_lines(image, min_angle, max_angle, min_separation_distance, min_se
   rows, cols = image.shape
   for angle, dist in zip(peak_angles, peak_distances):
     # from r = y * sin(theta) + x cos(theta)
-    y0 = int((dist - 0 * np.cos(angle)) / np.sin(angle))
-    y1 = int((dist - (cols-1) * np.cos(angle)) / np.sin(angle))
+    if (np.sin(angle) == 0):
+      y0 = 0
+      y1 = 1
+    else:
+      y0 = int((dist - 0 * np.cos(angle)) / np.sin(angle))
+      y1 = int((dist - (cols-1) * np.cos(angle)) / np.sin(angle))
+
     lines.append(((y0, 0), (y1, cols-1)))
-  
+    
   return lines
