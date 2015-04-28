@@ -13,6 +13,7 @@ import skimage.draw as skidraw
 from skimage.color import gray2rgb
 
 from line_intersection import seg_intersect
+from hough_lines import get_hough_lines as do_hough
 
 import matplotlib.pyplot as plt
 import geojson
@@ -65,11 +66,9 @@ def get_boundary(grayscale_image, debug = False):
   return region_of_interest_boundary
 
 def get_hough_lines(image, min_angle, max_angle):
-  angles = np.deg2rad(np.arange(min_angle, max_angle, 1))
-  hough, angles, distances = hough_line(image, angles)
-  peak_hough, peak_angles, peak_distances = hough_line_peaks(hough, angles, distances, num_peaks = 50, threshold = 0.5*np.amax(hough), min_distance = 5, min_angle = 5)
-  lines = probabilistic_hough_line(image, theta = peak_angles, line_gap = 305, line_length = 7)
-  return lines
+  min_separation_distance = 5
+  min_separation_angle = 5
+  return do_hough(image, min_angle, max_angle, min_separation_distance, min_separation_angle)
 
 def get_line_length(line):
   return np.linalg.norm(np.subtract(line[1], line[0]))
@@ -105,12 +104,12 @@ def get_box_lines(boundary, debug = False, image = None):
   timeEnd("select longest lines")
 
   # translate lines to account for working with halved image regions
-  longest_lines["bottom"] += [0, half_height]
-  longest_lines["right"] += [half_width, 0]
+  longest_lines["bottom"] += [half_height, 0]
+  longest_lines["right"] += [0, half_width]
 
   if debug:
     image = gray2rgb(image)
-    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for name, line in longest_lines.iteritems() ]
+    line_coords = [ skidraw.line(line[0][0], line[0][1], line[1][0], line[1][1]) for name, line in longest_lines.iteritems() ]
     for line in line_coords:
       rr, cc = line
       mask = (rr >= 0) & (rr < image.shape[0]) & (cc >= 0) & (cc < image.shape[1])
@@ -127,13 +126,14 @@ def get_roi_corners(lines, debug = False, image = None):
     "bottom_left": seg_intersect(lines["bottom"], lines["left"]),
     "bottom_right": seg_intersect(lines["bottom"], lines["right"])
   }
+
   # turn corners into tuples of the form (y, x), where y and x are integers
   corners = { corner_name: tuple(coord.astype(int))[::-1] for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
   if debug:
-    inner_circles = { corner_name: skidraw.circle(corner[0], corner[1], 10) for corner_name, corner in corners.iteritems() }
-    outer_circles = { corner_name: skidraw.circle(corner[0], corner[1], 50) for corner_name, corner in corners.iteritems() }
+    inner_circles = { corner_name: skidraw.circle(corner[0], corner[1], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
+    outer_circles = { corner_name: skidraw.circle(corner[0], corner[1], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:
       image[outer_circles[corner_name]] = 0
       image[inner_circles[corner_name]] = 255
