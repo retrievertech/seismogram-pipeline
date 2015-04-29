@@ -54,7 +54,6 @@ class IntersectionCollection:
             newCircle = geojson.Feature(geometry = newPoint, properties = { "radius": radius })
             circles.append(newCircle)
         out = geojson.FeatureCollection(circles)
-        print "Saving to ", filepath
         with open(filepath, 'w') as outfile:
             geojson.dump(out, outfile)
     
@@ -84,11 +83,6 @@ class IntersectionCollection:
     # else:
     #     output_intersections(['Row', 'Column', 'Degree', 'Radius'], \
     #     intersections[:,0], intersections[:,1], degrees, radii)
-
-def find_intersections_from_file_path(input_path):
-    image = imread(input_path)
-    image = color.rgb2gray(image)
-    return find_intersections(image)
 
 def find_intersections(image_bin, figure=True, labels=False):
     '''    
