@@ -5,6 +5,9 @@ Created on Thu Jan 29 14:38:19 2015
 @author: benamy
 """
 
+from timer import timeStart, timeEnd
+
+timeStart("import libs")
 import numpy as np
 from matplotlib.pyplot import imread
 import csv
@@ -17,6 +20,7 @@ from skimage.io import imsave
 from skimage.draw import circle
 
 import geojson
+timeEnd("import libs")
 
 class IntersectionCollection:
     '''
@@ -60,8 +64,14 @@ class IntersectionCollection:
         as a black and white image, where white pixels
         represent intersections.
         '''
+        timeStart("mark coords")
         image_intersections = mark_coords(self.shape, self.intersections)
+        timeEnd("mark coords")
+        
+        timeStart("expand junctions")
         expand_junctions(image_intersections, self.intersections, self.radii)
+        timeEnd("expand junctions")
+        
         image_intersections = image_intersections.astype(float)
         imsave(filepath, image_intersections)
 
@@ -104,7 +114,11 @@ def find_intersections(image_bin, figure=True, labels=False):
         An object containing all intersection and radius data,
         and providing functions to export the data to a file.
     '''
+    timeStart("skeletonize image")
     image_skel,dist = medial_axis(image_bin, return_distance = True)
+    timeEnd("skeletonize image")
+
+    timeStart("prune skeleton")
     image_dead_ends = find_dead_ends(image_skel)
     dendrites = get_all_pixel_paths(image_skel,image_dead_ends, 
                                     max_path_length = 50)
@@ -124,7 +138,12 @@ def find_intersections(image_bin, figure=True, labels=False):
         if dendrite_displacement < d_threshold * dist[pix_f[0], pix_f[1]]:
             remove_pixels(image_skel,d)
     
+    timeEnd("prune skeleton")
+
+    timeStart("find junctions")
     intersections, degrees = find_junctions(image_skel)
+    timeEnd("find junctions")
+
     radii = get_intersection_sizes(intersections, dist)
     return IntersectionCollection(intersections, radii, image_skel.shape)
 
