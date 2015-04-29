@@ -41,7 +41,7 @@ def get_meanlines(masked_image, debug = False):
 
 def save_meanlines_as_geojson(lines, filepath):
   timeStart("saving to "+ filepath)
-  lines = [ geojson.Feature(geometry = geojson.LineString(line)) for line in lines ]
+  lines = [ geojson.Feature(geometry = geojson.LineString(line), id = idx) for idx, line in enumerate(lines) ]
   newFeature = geojson.FeatureCollection(lines)
   with open(filepath, 'w') as outfile:
     geojson.dump(newFeature, outfile)

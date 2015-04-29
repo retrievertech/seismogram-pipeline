@@ -15,8 +15,8 @@ def get_segments(image, intersections):
 
 def save_segments_as_geojson(segments, filepath):
   timeStart("saving to "+ filepath)
-  segment_features = [ geojson.Feature(geometry = geojson.LineString(line)) for line in segments ]
-  collection = geojson.FeatureCollection(segment_features)
+  features = [ geojson.Feature(geometry = geojson.LineString(line), id = idx) for idx, line in enumerate(segments) ]
+  collection = geojson.FeatureCollection(features)
   with open(filepath, 'w') as outfile:
     geojson.dump(collection, outfile)
   timeEnd("saving to "+ filepath)
