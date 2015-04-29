@@ -35,7 +35,11 @@ if __name__ == '__main__':
       from lib.segment_detection import save_segments_as_geojson
 
       timeStart("DONE", immediate=False)
+
+      timeStart("read image")
       image = get_image(in_file)
+      timeEnd("read image")
+
       intersections = get_features(intersections_file)
       
       timeStart("get segments")

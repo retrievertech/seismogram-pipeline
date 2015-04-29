@@ -29,11 +29,16 @@ if __name__ == '__main__':
       from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, save_corners_as_geojson
 
       timeStart("DONE", immediate=False)
+
+      timeStart("read image")
       image = get_image(in_file)
+      timeEnd("read image")
+
       boundary = get_boundary(image, debug=debug)
       lines = get_box_lines(boundary, debug=debug, image=image)
       corners = get_roi_corners(lines, debug=debug, image=image)
       save_corners_as_geojson(corners, out_file)
+      
       timeEnd("DONE", immediate=False)
     else:
       print(arguments)

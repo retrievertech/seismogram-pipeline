@@ -36,7 +36,11 @@ if __name__ == '__main__':
       from lib.meanline_detection import save_meanlines_as_geojson
 
       timeStart("DONE", immediate=False)
+
+      timeStart("read image")
       image = get_image(in_file)
+      timeEnd("read image")
+
       roi_polygon = get_features(roi_file)["geometry"]["coordinates"]
 
       timeStart("mask image")
@@ -45,6 +49,7 @@ if __name__ == '__main__':
       
       meanlines = get_meanlines(masked_image, debug=True)
       save_meanlines_as_geojson(meanlines, out_file)
+
       timeEnd("DONE", immediate=False)
     else:
       print(arguments)
