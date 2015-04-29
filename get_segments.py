@@ -41,9 +41,7 @@ if __name__ == '__main__':
       timeStart("get segments")
       segments = get_segments(image, intersections)
       timeEnd("get segments")
-      
-      print segments
-      
+            
       save_segments_as_geojson(segments, out_file)
       timeEnd("DONE", immediate=False)
     else:
