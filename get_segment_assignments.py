@@ -21,27 +21,30 @@ Options:
 
 from docopt import docopt
 
+def get_segment_assignments(segments_file, meanlines_file, out_file):
+  from lib.timer import timeStart, timeEnd
+  from lib.load_geojson import get_features
+  from lib.segment_assignment import assign_segments_to_meanlines
+  from lib.segment_assignment import save_assignments_as_json
+
+  timeStart("DONE", immediate=False)
+  segments = get_features(segments_file)
+  meanlines = get_features(meanlines_file)
+  
+  timeStart("assign segments to meanlines")
+  assignments = assign_segments_to_meanlines(segments, meanlines)
+  timeEnd("assign segments to meanlines")
+  
+  save_assignments_as_json(assignments, out_file)
+  timeEnd("DONE", immediate=False)
+
 if __name__ == '__main__':
-    arguments = docopt(__doc__)
-    segments_file = arguments["--segments"]
-    meanlines_file = arguments["--meanlines"]
-    out_file = arguments["--output"]
+  arguments = docopt(__doc__)
+  segments_file = arguments["--segments"]
+  meanlines_file = arguments["--meanlines"]
+  out_file = arguments["--output"]
 
-    if (segments_file and meanlines_file):
-      from lib.timer import timeStart, timeEnd
-      from lib.load_geojson import get_features
-      from lib.segment_assignment import assign_segments_to_meanlines
-      from lib.segment_assignment import save_assignments_as_json
-
-      timeStart("DONE", immediate=False)
-      segments = get_features(segments_file)
-      meanlines = get_features(meanlines_file)
-      
-      timeStart("assign segments to meanlines")
-      assignments = assign_segments_to_meanlines(segments, meanlines)
-      timeEnd("assign segments to meanlines")
-      
-      save_assignments_as_json(assignments, out_file)
-      timeEnd("DONE", immediate=False)
-    else:
-      print(arguments)
+  if (segments_file and meanlines_file):
+    get_segment_assignments(segments_file, meanlines_file, out_file)
+  else:
+    print(arguments)
