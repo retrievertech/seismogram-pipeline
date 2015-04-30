@@ -8,15 +8,22 @@ def get_hough_lines(image, min_angle, max_angle, min_separation_distance, min_se
 
   lines = []
   rows, cols = image.shape
-  for angle, dist in zip(peak_angles, peak_distances):
+  for angle, radius in zip(peak_angles, peak_distances):
     # from r = y * sin(theta) + x cos(theta)
     if (np.sin(angle) == 0):
+      # vertical line at x = radius
+      x0 = radius.astype(int)
+      x1 = radius.astype(int)
       y0 = 0
       y1 = 1
     else:
-      y0 = int((dist - 0 * np.cos(angle)) / np.sin(angle))
-      y1 = int((dist - (cols-1) * np.cos(angle)) / np.sin(angle))
+      # TODO: solve for points that are on the image boundary
+      # instead of always using x0 = 0 and x1 = cols - 1
+      x0 = 0
+      x1 = cols - 1
+      y0 = int((radius - x0 * np.cos(angle)) / np.sin(angle))
+      y1 = int((radius - x1 * np.cos(angle)) / np.sin(angle))
 
-    lines.append(((y0, 0), (y1, cols-1)))
+    lines.append(((y0, x0), (y1, x1)))
     
   return lines
