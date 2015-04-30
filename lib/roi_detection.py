@@ -20,9 +20,7 @@ import matplotlib.pyplot as plt
 import geojson
 timeEnd("import libs")
 
-debug_dir = "debug"
-
-def get_boundary(grayscale_image, debug = False):
+def get_boundary(grayscale_image, debug_dir = False):
   timeStart("threshold image")
   black_and_white_image = threshold_image(grayscale_image)
   timeEnd("threshold image")
@@ -57,7 +55,7 @@ def get_boundary(grayscale_image, debug = False):
   region_of_interest_boundary[region_of_interest_mask] = 0
   timeEnd("mask region of interest")
 
-  if debug:
+  if debug_dir:
     misc.imsave(debug_dir+"/black_and_white_image.png", black_and_white_image)
     misc.imsave(debug_dir+"/opened_image.png", opened_image)
     misc.imsave(debug_dir+"/image_boundaries.png", image_boundaries)
@@ -73,7 +71,7 @@ def get_hough_lines(image, min_angle, max_angle):
 def get_line_length(line):
   return np.linalg.norm(np.subtract(line[1], line[0]))
 
-def get_box_lines(boundary, debug = False, image = None):
+def get_box_lines(boundary, debug_dir = False, image = None):
   height, width = boundary.shape
   [half_width, half_height] = np.floor([0.5 * width, 0.5 * height]).astype(int)
 
@@ -107,7 +105,7 @@ def get_box_lines(boundary, debug = False, image = None):
   longest_lines["bottom"] += [half_height, 0]
   longest_lines["right"] += [0, half_width]
 
-  if debug:
+  if debug_dir:
     image = gray2rgb(image)
     line_coords = [ skidraw.line(line[0][0], line[0][1], line[1][0], line[1][1]) for name, line in longest_lines.iteritems() ]
     for line in line_coords:
@@ -118,7 +116,7 @@ def get_box_lines(boundary, debug = False, image = None):
 
   return longest_lines
 
-def get_roi_corners(lines, debug = False, image = None):
+def get_roi_corners(lines, debug_dir = False, image = None):
   timeStart("find intersections")
   corners = {
     "top_left": seg_intersect(lines["top"], lines["left"]),
@@ -131,7 +129,7 @@ def get_roi_corners(lines, debug = False, image = None):
   corners = { corner_name: tuple(coord.astype(int))[::-1] for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
-  if debug:
+  if debug_dir:
     inner_circles = { corner_name: skidraw.circle(corner[0], corner[1], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
     outer_circles = { corner_name: skidraw.circle(corner[0], corner[1], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:

@@ -6,7 +6,7 @@ Description:
   FeatureCollection of features with LineString geometries.
 
 Usage:
-  get_meanlines.py --roi <filename> --image <filename> --output <filename> [--debug]
+  get_meanlines.py --roi <filename> --image <filename> --output <filename> [--debug <directory>]
   get_meanlines.py -h | --help
 
 Options:
@@ -14,7 +14,7 @@ Options:
   --roi <filename>     Filename of geojson Polygon representing region-of-interest.
   --image <filename>   Filename of grayscale seismogram.
   --output <filename>  Filename of geojson output.
-  -d --debug           Save intermediate steps as images for inspection in debug/.
+  --debug <directory>  Save intermediate steps as images for inspection in <directory>.
 
 """
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     in_file = arguments["--image"]
     out_file = arguments["--output"]
     roi_file = arguments["--roi"]
-    debug = arguments["--debug"]
+    debug_dir = arguments["--debug"]
 
     if (in_file and out_file and roi_file):
       from lib.timer import timeStart, timeEnd
@@ -47,7 +47,7 @@ if __name__ == '__main__':
       masked_image = mask_image(image, roi_polygon)
       timeEnd("mask image")
       
-      meanlines = get_meanlines(masked_image, debug=True)
+      meanlines = get_meanlines(masked_image, debug_dir=debug_dir)
       save_meanlines_as_geojson(meanlines, out_file)
 
       timeEnd("DONE", immediate=False)

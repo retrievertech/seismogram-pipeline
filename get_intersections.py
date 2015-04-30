@@ -5,7 +5,7 @@ Description:
   geometries and 'radius' properties.
 
 Usage:
-  get_intersections.py --roi <filename> --thresh-image <filename> --output <filename> [--debug]
+  get_intersections.py --roi <filename> --thresh-image <filename> --output <filename> [--debug <directory>]
   get_intersections.py -h | --help
 
 Options:
@@ -13,7 +13,7 @@ Options:
   --roi <filename>           Filename of geojson Polygon representing region-of-interest.
   --thresh-image <filename>  Filename of black and white input image.
   --output <filename>        Filename of geojson output.
-  --debug                    Save image showing intersections in debug/intersections.png.
+  --debug <directory>        Save debug images in <directory>.
 
 """
 
@@ -24,8 +24,7 @@ if __name__ == '__main__':
     in_file = arguments["--thresh-image"]
     roi_file = arguments["--roi"]
     out_file = arguments["--output"]
-    debug = arguments["--debug"]
-    debug_path = "debug/intersections.png"
+    debug_dir = arguments["--debug"]
 
     if (in_file and out_file):
       from lib.timer import timeStart, timeEnd
@@ -52,10 +51,11 @@ if __name__ == '__main__':
       intersections.exportAsGeoJSON(out_file)
       timeEnd("saving to "+ out_file)
 
-      if debug:
-        timeStart("saving to "+ debug_path)
-        intersections.exportAsImage(debug_path)
-        timeEnd("saving to "+ debug_path)
+      if debug_dir:
+        debug_filepath = debug_dir + "/intersections.png"
+        timeStart("saving to "+ debug_filepath)
+        intersections.exportAsImage(debug_filepath)
+        timeEnd("saving to "+ debug_filepath)
 
       timeEnd("DONE", immediate=False)
     else:

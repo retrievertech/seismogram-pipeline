@@ -10,9 +10,7 @@ import skimage.draw as skidraw
 import geojson
 timeEnd("import libs")
 
-debug_dir = "debug"
-
-def get_meanlines(masked_image, debug = False):
+def get_meanlines(masked_image, debug_dir = False):
   timeStart("threshold image")
   black_and_white_image = threshold_image(masked_image)
   timeEnd("threshold image")
@@ -23,14 +21,14 @@ def get_meanlines(masked_image, debug = False):
   filtered_image = remove_small_objects(black_and_white_image, 30)
   timeEnd("remove small objects")
 
-  if debug:
+  if debug_dir:
     misc.imsave(debug_dir+"/filtered_image.png", filtered_image)
 
   timeStart("get hough lines")
   lines = get_hough_lines(filtered_image, min_angle=-120, max_angle=-70, min_separation_distance=9 , min_separation_angle=25)
   timeEnd("get hough lines")
 
-  if debug:
+  if debug_dir:
     debug_image = np.copy(masked_image)
     line_coords = [ skidraw.line(line[0][0], line[0][1], line[1][0], line[1][1]) for line in lines ]
     for line in line_coords:

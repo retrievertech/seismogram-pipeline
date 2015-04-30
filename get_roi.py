@@ -4,14 +4,14 @@ Description:
   seismogram image.
 
 Usage:
-  get_roi.py --image <filename> --output <filename> [--debug]
+  get_roi.py --image <filename> --output <filename> [--debug <directory>]
   get_roi.py -h | --help
 
 Options:
   -h --help            Show this screen.
   --image <filename>   Filename of grayscale input image.
   --output <filename>  Filename of geojson output.
-  -d --debug           Save intermediate steps as images for inspection in debug/.
+  --debug <directory>  Save intermediate steps as images for inspection in <directory>.
 
 """
 
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     arguments = docopt(__doc__)
     in_file = arguments["--image"]
     out_file = arguments["--output"]
-    debug = arguments["--debug"]
+    debug_dir = arguments["--debug"]
 
     if (in_file and out_file):
       from lib.timer import timeStart, timeEnd
@@ -34,9 +34,9 @@ if __name__ == '__main__':
       image = get_image(in_file)
       timeEnd("read image")
 
-      boundary = get_boundary(image, debug=debug)
-      lines = get_box_lines(boundary, debug=debug, image=image)
-      corners = get_roi_corners(lines, debug=debug, image=image)
+      boundary = get_boundary(image, debug_dir=debug_dir)
+      lines = get_box_lines(boundary, debug_dir=debug_dir, image=image)
+      corners = get_roi_corners(lines, debug_dir=debug_dir, image=image)
       save_corners_as_geojson(corners, out_file)
       
       timeEnd("DONE", immediate=False)
