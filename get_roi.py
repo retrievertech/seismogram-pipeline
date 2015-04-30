@@ -24,6 +24,10 @@ if __name__ == '__main__':
     debug_dir = arguments["--debug"]
 
     if (in_file and out_file):
+      if debug_dir:
+        from lib.dir import ensure_dir_exists
+        ensure_dir_exists(debug_dir)
+      
       from lib.timer import timeStart, timeEnd
       from lib.load_image import get_image
       from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, save_corners_as_geojson
