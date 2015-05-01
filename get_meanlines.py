@@ -6,7 +6,7 @@ Description:
   FeatureCollection of features with LineString geometries.
 
 Usage:
-  get_meanlines.py --roi <filename> --image <filename> --output <filename> [--debug <directory>]
+  get_meanlines.py --roi <filename> --image <filename> --output <filename> [--scale <scale>] [--debug <directory>]
   get_meanlines.py -h | --help
 
 Options:
@@ -14,13 +14,14 @@ Options:
   --roi <filename>     Filename of geojson Polygon representing region-of-interest.
   --image <filename>   Filename of grayscale seismogram.
   --output <filename>  Filename of geojson output.
+  --scale <scale>      1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
   --debug <directory>  Save intermediate steps as images for inspection in <directory>.
 
 """
 
 from docopt import docopt
 
-def get_meanlines(in_file, out_file, roi_file, debug_dir=False):
+def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   if debug_dir:
     from lib.dir import ensure_dir_exists
     ensure_dir_exists(debug_dir)
@@ -44,7 +45,7 @@ def get_meanlines(in_file, out_file, roi_file, debug_dir=False):
   masked_image = mask_image(image, roi_polygon)
   timeEnd("mask image")
   
-  meanlines = get_meanlines(masked_image, debug_dir=debug_dir)
+  meanlines = get_meanlines(masked_image, scale=scale, debug_dir=debug_dir)
   save_meanlines_as_geojson(meanlines, out_file)
 
   timeEnd("DONE", immediate=False)
@@ -54,9 +55,10 @@ if __name__ == '__main__':
   in_file = arguments["--image"]
   out_file = arguments["--output"]
   roi_file = arguments["--roi"]
+  scale = float(arguments["--scale"])
   debug_dir = arguments["--debug"]
 
   if (in_file and out_file and roi_file):
-    get_meanlines(in_file, out_file, roi_file, debug_dir)
+    get_meanlines(in_file, out_file, roi_file, scale, debug_dir)
   else:
     print(arguments)

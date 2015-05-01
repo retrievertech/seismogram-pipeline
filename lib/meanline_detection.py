@@ -10,15 +10,17 @@ import skimage.draw as skidraw
 import geojson
 timeEnd("import libs")
 
-def get_meanlines(masked_image, debug_dir = False):
+PARAMS = {
+  "small-object-size": lambda scale: int(500*scale*scale)
+}
+
+def get_meanlines(masked_image, scale=1, debug_dir=False):
   timeStart("threshold image")
   black_and_white_image = threshold_image(masked_image)
   timeEnd("threshold image")
 
   timeStart("remove small objects")
-  # TODO: make the small object size parameter a function of input image size or some scale factor
-  # filtered_image = remove_small_objects(black_and_white_image, 500)
-  filtered_image = remove_small_objects(black_and_white_image, 30)
+  filtered_image = remove_small_objects(black_and_white_image, PARAMS["small-object-size"](scale))
   timeEnd("remove small objects")
 
   if debug_dir:
