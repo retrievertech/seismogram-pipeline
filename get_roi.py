@@ -11,7 +11,7 @@ Options:
   -h --help            Show this screen.
   --image <filename>   Filename of grayscale input image.
   --output <filename>  Filename of geojson output.
-  --scale <scale>      1 for a full-size seismogram, 0.25 for quarter-size, etc.
+  --scale <scale>      1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
   --debug <directory>  Save intermediate steps as images for inspection in <directory>.
 
 """
