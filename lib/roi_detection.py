@@ -20,13 +20,17 @@ import matplotlib.pyplot as plt
 import geojson
 timeEnd("import libs")
 
-def get_boundary(grayscale_image, debug_dir = False):
+PARAMS = {
+  "disk-size": lambda scale: int(17*scale)
+}
+
+def get_boundary(grayscale_image, scale=1, debug_dir=False):
   timeStart("threshold image")
   black_and_white_image = threshold_image(grayscale_image)
   timeEnd("threshold image")
 
   timeStart("morphological open image")
-  filter_element = disk(4) # 17 for full-size image
+  filter_element = disk(PARAMS["disk-size"](scale))
   opened_image = opening(black_and_white_image, filter_element)
   timeEnd("morphological open image")
 
