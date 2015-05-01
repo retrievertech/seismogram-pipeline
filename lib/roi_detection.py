@@ -93,8 +93,8 @@ def get_box_lines(boundary, debug_dir = False, image = None):
   hough_lines = {
     "left": np.array(get_hough_lines(image_regions["left"], min_angle = -10, max_angle = 10)),
     "right": np.array(get_hough_lines(image_regions["right"], min_angle = -10, max_angle = 10)),
-    "top": np.array(get_hough_lines(image_regions["top"], min_angle = -120, max_angle = 70)),
-    "bottom": np.array(get_hough_lines(image_regions["bottom"], min_angle = -120, max_angle = 70))
+    "top": np.array(get_hough_lines(image_regions["top"], min_angle = -120, max_angle = -70)),
+    "bottom": np.array(get_hough_lines(image_regions["bottom"], min_angle = -120, max_angle = -70))
   }
   timeEnd("get hough lines")
 
