@@ -3,8 +3,9 @@ from timer import timeStart, timeEnd
 timeStart("import libs")
 import numpy as np
 from scipy import misc
+from scipy.ndimage.morphology import binary_opening
 from skimage.filters import threshold_otsu
-from skimage.morphology import disk, opening
+from skimage.morphology import disk
 from skimage.segmentation import find_boundaries
 from scipy.ndimage.measurements import label
 
@@ -31,7 +32,7 @@ def get_boundary(grayscale_image, scale=1, debug_dir=False):
 
   timeStart("morphological open image")
   filter_element = disk(PARAMS["disk-size"](scale))
-  opened_image = opening(black_and_white_image, filter_element)
+  opened_image = binary_opening(black_and_white_image, filter_element)
   timeEnd("morphological open image")
 
   timeStart("invert image")
