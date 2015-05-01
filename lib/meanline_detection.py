@@ -20,6 +20,9 @@ def get_meanlines(masked_image, scale=1, debug_dir=False):
   black_and_white_image = threshold_image(masked_image)
   timeEnd("threshold image")
 
+  if debug_dir:
+    misc.imsave(debug_dir+"/thresholded_image.png", black_and_white_image)
+
   timeStart("remove small objects")
   filtered_image = remove_small_objects(black_and_white_image, PARAMS["small-object-size"](scale))
   timeEnd("remove small objects")
