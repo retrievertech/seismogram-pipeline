@@ -7,6 +7,7 @@ from skimage.morphology import remove_small_objects
 from scipy import misc
 import numpy as np
 import skimage.draw as skidraw
+from skimage.color import gray2rgb
 import geojson
 timeEnd("import libs")
 
@@ -31,10 +32,12 @@ def get_meanlines(masked_image, scale=1, debug_dir=False):
   timeEnd("get hough lines")
 
   if debug_dir:
-    debug_image = np.copy(masked_image)
+    debug_image = gray2rgb(np.copy(masked_image))
     line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for line in lines ]
     for line in line_coords:
-      debug_image[line] = 255
+      rr, cc = line
+      mask = (rr >= 0) & (rr < debug_image.shape[0]) & (cc >= 0) & (cc < debug_image.shape[1])
+      debug_image[rr[mask], cc[mask]] = [255, 0, 0]
     misc.imsave(debug_dir+"/mean_lines.png", debug_image)
 
   return lines
