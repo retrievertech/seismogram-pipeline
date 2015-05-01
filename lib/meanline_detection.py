@@ -30,7 +30,7 @@ def get_meanlines(masked_image, debug_dir = False):
 
   if debug_dir:
     debug_image = np.copy(masked_image)
-    line_coords = [ skidraw.line(line[0][0], line[0][1], line[1][0], line[1][1]) for line in lines ]
+    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for line in lines ]
     for line in line_coords:
       debug_image[line] = 255
     misc.imsave(debug_dir+"/mean_lines.png", debug_image)

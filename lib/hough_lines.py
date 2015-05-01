@@ -24,6 +24,6 @@ def get_hough_lines(image, min_angle, max_angle, min_separation_distance, min_se
       y0 = int((radius - x0 * np.cos(angle)) / np.sin(angle))
       y1 = int((radius - x1 * np.cos(angle)) / np.sin(angle))
 
-    lines.append(((y0, x0), (y1, x1)))
+    lines.append(((x0, y0), (x1, y1)))
     
   return lines

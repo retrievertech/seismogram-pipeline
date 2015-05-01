@@ -14,12 +14,12 @@ def perp(a):
 # seg_intersect returns the intersection (if any) of the infinite lines
 # defined by segments seg1 and seg2
 
-# seg1 and seg2 are each of the form [[y1, x1], [y2, x2]]
+# seg1 and seg2 are each of the form [[x1, y1], [x2, y2]]
 
 # TODO: handle divide by 0 case for parallel lines (check if denom is 0 before dividing)
 
 def seg_intersect(seg1, seg2):
-  a1, a2, b1, b2 = seg1[0][::-1], seg1[1][::-1], seg2[0][::-1], seg2[1][::-1]
+  a1, a2, b1, b2 = seg1[0], seg1[1], seg2[0], seg2[1]
   da = a2-a1
   db = b2-b1
   dp = a1-b1

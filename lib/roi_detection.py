@@ -102,12 +102,12 @@ def get_box_lines(boundary, debug_dir = False, image = None):
   timeEnd("select longest lines")
 
   # translate lines to account for working with halved image regions
-  longest_lines["bottom"] += [half_height, 0]
-  longest_lines["right"] += [0, half_width]
+  longest_lines["bottom"] += [0, half_height]
+  longest_lines["right"] += [half_width, 0]
 
   if debug_dir:
     image = gray2rgb(image)
-    line_coords = [ skidraw.line(line[0][0], line[0][1], line[1][0], line[1][1]) for name, line in longest_lines.iteritems() ]
+    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for name, line in longest_lines.iteritems() ]
     for line in line_coords:
       rr, cc = line
       mask = (rr >= 0) & (rr < image.shape[0]) & (cc >= 0) & (cc < image.shape[1])
@@ -125,13 +125,13 @@ def get_roi_corners(lines, debug_dir = False, image = None):
     "bottom_right": seg_intersect(lines["bottom"], lines["right"])
   }
 
-  # turn corners into tuples of the form (y, x), where y and x are integers
-  corners = { corner_name: tuple(coord.astype(int))[::-1] for corner_name, coord in corners.iteritems() }
+  # turn corners into tuples of the form (x, y), where x and y are integers
+  corners = { corner_name: tuple(coord.astype(int)) for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
   if debug_dir:
-    inner_circles = { corner_name: skidraw.circle(corner[0], corner[1], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
-    outer_circles = { corner_name: skidraw.circle(corner[0], corner[1], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
+    inner_circles = { corner_name: skidraw.circle(corner[1], corner[0], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
+    outer_circles = { corner_name: skidraw.circle(corner[1], corner[0], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:
       image[outer_circles[corner_name]] = 0
       image[inner_circles[corner_name]] = 255

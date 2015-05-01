@@ -9,7 +9,7 @@ def get_segments(image, intersections):
   min_num_points = 3
   max_num_points = 15
   num_lines = randint(50, 200)
-  line_array = [(shape * rand(randint(min_num_points, max_num_points), 2)).astype(int) for i in range(num_lines)]
+  line_array = [(shape[::-1] * rand(randint(min_num_points, max_num_points), 2)).astype(int) for i in range(num_lines)]
   line_array = [map(tuple, line) for line in line_array]
   return line_array
 
