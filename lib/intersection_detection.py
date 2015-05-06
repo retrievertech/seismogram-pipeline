@@ -84,7 +84,7 @@ class IntersectionCollection:
     #     output_intersections(['Row', 'Column', 'Degree', 'Radius'], \
     #     intersections[:,0], intersections[:,1], degrees, radii)
 
-def find_intersections(image_bin, figure=True, labels=False):
+def find_intersections(image_bin, mask=None, figure=True, labels=False):
     '''    
     Finds the intersections of traces by skeletonizing the image.
     
@@ -109,7 +109,7 @@ def find_intersections(image_bin, figure=True, labels=False):
         and providing functions to export the data to a file.
     '''
     timeStart("skeletonize image")
-    image_skel,dist = medial_axis(image_bin, return_distance = True)
+    image_skel,dist = medial_axis(image_bin, mask=mask, return_distance = True)
     timeEnd("skeletonize image")
 
     timeStart("prune skeleton")

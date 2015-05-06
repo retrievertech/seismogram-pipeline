@@ -42,7 +42,7 @@ def get_intersections(in_file, out_file, roi_file, debug_dir=False):
   masked_image = mask_image(grayscale_image, roi_polygon)
   timeEnd("mask image")
 
-  intersections = find_intersections(masked_image)
+  intersections = find_intersections(masked_image.data, ~masked_image.mask)
 
   timeStart("saving to "+ out_file)
   intersections.exportAsGeoJSON(out_file)

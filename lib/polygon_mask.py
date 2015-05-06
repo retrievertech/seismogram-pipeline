@@ -1,5 +1,6 @@
 from skimage.draw import polygon
 import numpy as np
+import numpy.ma as ma
 
 def get_polygon_coordinates(polygon_feature):
   y = polygon_feature[:, 1]
@@ -9,6 +10,6 @@ def get_polygon_coordinates(polygon_feature):
 def mask_image(image, polygon_feature):
   (y, x) = get_polygon_coordinates(np.array(polygon_feature))
   rr, cc = polygon(y, x)
-  mask = np.zeros(image.shape)
-  mask[rr, cc] = 1
-  return mask * image
+  mask = np.ones(image.shape)
+  mask[rr, cc] = 0
+  return ma.masked_array(image, mask=mask)
