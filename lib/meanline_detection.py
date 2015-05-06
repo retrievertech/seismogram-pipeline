@@ -15,7 +15,7 @@ PARAMS = {
   "small-object-size": lambda scale: int(500*scale*scale)
 }
 
-def get_meanlines(masked_image, scale=1, debug_dir=False):
+def detect_meanlines(masked_image, scale=1, debug_dir=False):
   timeStart("threshold image")
   black_and_white_image = threshold_image(masked_image)
   timeEnd("threshold image")

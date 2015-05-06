@@ -30,7 +30,7 @@ def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   from lib.load_image import get_image
   from lib.load_geojson import get_features
   from lib.polygon_mask import mask_image
-  from lib.meanline_detection import get_meanlines
+  from lib.meanline_detection import detect_meanlines
   from lib.meanline_detection import save_meanlines_as_geojson
 
   timeStart("DONE", immediate=False)
@@ -45,7 +45,7 @@ def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   masked_image = mask_image(image, roi_polygon)
   timeEnd("mask image")
   
-  meanlines = get_meanlines(masked_image, scale=scale, debug_dir=debug_dir)
+  meanlines = detect_meanlines(masked_image, scale=scale, debug_dir=debug_dir)
   save_meanlines_as_geojson(meanlines, out_file)
 
   timeEnd("DONE", immediate=False)
