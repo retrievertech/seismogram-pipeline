@@ -39,7 +39,7 @@ def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   image = get_image(in_file)
   timeEnd("read image")
 
-  roi_polygon = get_features(roi_file)["geometry"]["coordinates"]
+  roi_polygon = get_features(roi_file)["geometry"]["coordinates"][0]
 
   timeStart("mask image")
   masked_image = mask_image(image, roi_polygon)
