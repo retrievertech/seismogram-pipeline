@@ -14,7 +14,6 @@ Options:
   --image <filename>          Filename of grayscale input image.
   --intersections <filename>  Filename of intersection metadata.
   --output <filename>         Filename of geojson output.
-  -d --debug                  Save intermediate steps as images for inspection in debug/.
 
 """
 
@@ -47,7 +46,6 @@ if __name__ == '__main__':
   in_file = arguments["--image"]
   intersections_file = arguments["--intersections"]
   out_file = arguments["--output"]
-  debug = arguments["--debug"]
 
   if (in_file and out_file and intersections_file):
     get_segments(in_file, out_file, intersections_file)
