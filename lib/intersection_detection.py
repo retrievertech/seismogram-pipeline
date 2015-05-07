@@ -138,6 +138,8 @@ def find_intersections(image_bin, mask=None, figure=True, labels=False):
     intersections, degrees = find_junctions(image_skel)
     timeEnd("find junctions")
 
+    print "found %s junctions" % len(intersections)
+
     radii = get_intersection_sizes(intersections, dist)
     return IntersectionCollection(intersections, radii, image_skel.shape)
 
