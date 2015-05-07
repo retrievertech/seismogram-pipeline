@@ -66,7 +66,7 @@ class IntersectionCollection:
         timeStart("mark coords")
         image_intersections = mark_coords(self.shape, self.intersections)
         timeEnd("mark coords")
-        
+
         timeStart("expand junctions")
         expand_junctions(image_intersections, self.intersections, self.radii)
         timeEnd("expand junctions")
