@@ -2,15 +2,32 @@ from timer import timeStart, timeEnd
 
 from numpy.random import rand, randint
 import geojson
+import math
 
 def get_segments(image, intersections):
-  # Generate dummy segments for now
+  # Generate dummy segments
+  def random_phase():
+    return rand() * math.pi * 2
+
+  def random_freq():
+    return randint(1, 20) * math.pi * 2 / shape[1]
+
+  def random_amplitude():
+    return randint(10, shape[0]/4)
+
+  def random_offset():
+    return randint(shape[0]/4, shape[0])
+
   shape = image.shape
-  min_num_points = 3
-  max_num_points = 15
-  num_lines = randint(50, 200)
-  line_array = [(shape[::-1] * rand(randint(min_num_points, max_num_points), 2)).astype(int) for i in range(num_lines)]
-  line_array = [map(tuple, line) for line in line_array]
+  num_traces = 24
+  line_array = []
+  for i in range(num_traces):
+    phase_1, phase_2 = random_phase(), random_phase()
+    freq_1, freq_2 = random_freq(), random_freq()
+    amp_1, amp_2 = random_amplitude(), random_amplitude()
+    offset = random_offset()
+    line_array.append([ (x, offset + int(amp_1*math.sin(x * freq_1 + phase_1) + amp_2*math.sin(x * freq_2 + phase_2))) for x in range(shape[1]) ])
+  
   return line_array
 
 def save_segments_as_geojson(segments, filepath):
