@@ -36,13 +36,13 @@ def get_intersections(in_file, out_file, roi_file, debug_dir=False):
   grayscale_image = get_image(in_file)
   timeEnd("read image")
 
-  roi_polygon = get_features(roi_file)["geometry"]["coordinates"]
+  roi_polygon = get_features(roi_file)["geometry"]["coordinates"][0]
 
   timeStart("mask image")
   masked_image = mask_image(grayscale_image, roi_polygon)
   timeEnd("mask image")
 
-  intersections = find_intersections(masked_image.data, ~masked_image.mask)
+  intersections = find_intersections(masked_image.filled(False))
 
   timeStart("saving to "+ out_file)
   intersections.exportAsGeoJSON(out_file)
