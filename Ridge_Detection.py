@@ -21,7 +21,7 @@ from skimage.feature import peak_local_max
 from skimage.filter import threshold_otsu
 from skimage.morphology import remove_small_objects
 
-import Utilities
+from Utilities import normalize
               
 def ridge_region_vert(ridges, shape):
     '''

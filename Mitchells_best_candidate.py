@@ -10,12 +10,33 @@ from math import sqrt
 from numpy.random import randint
 
 def best_candidate_sample(shape, num_samples, num_candidates = 10):
+    '''
+    Sample points randomly from a 2-D array using Mitchell's Best Candidate 
+    sampling algorithm. Produces more even coverage of an array than simply
+    taking a number of uniform random samples. 
+    
+    Parameters
+    ------------
+    shape : numpy array or tuple of ints
+        The dimensions of the image array.
+    num_samples : int
+        The number of samples to take. 
+    num_candidates : int, optional
+        The number of candidate samples to consider per sample point. 
+    
+    Returns
+    ---------
+    samples : 2-D numpy array of ints
+        The coordinates of the chosen sample points. The array has two columns
+        and num_samples rows. 
+    '''
     samples = [get_candidates(shape,num_candidates)[0]]
     for i in xrange(1,num_samples):
         candidates = get_candidates(shape, num_candidates)
         best_candidate = find_best_candidate(candidates, samples)
         samples.append(best_candidate)
-    return np.asarray(samples)
+    samples = np.asarray(samples)
+    return samples
         
 def get_candidates(shape, num_candidates):
     candidates = np.zeros((num_candidates,2),dtype=int)

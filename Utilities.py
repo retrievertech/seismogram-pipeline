@@ -6,31 +6,19 @@ Created on Tue Feb 17 11:54:50 2015
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 from skimage.draw import circle
 from scipy.stats import percentileofscore
-import Mitchells_best_candidate
+from Threshold import *
 
 def normalize(a):
+    '''
+    Given an array, this function subtracts the minimum of the array from all
+    elements and then divides all elements by the resulting maximum. All 
+    elements in the returned array are in the interval [0,1].
+    '''
     b = a - np.amin(a)
     b = b.astype(float) / np.amax(b)
     return b
-       
-def background_intensity(a, prob_background = 1):
-    if np.amax(a) <= 1:
-        bins = np.linspace(0, 1, num = 257)
-        a = np.round(255 * a) / 255
-    else:
-        bins = np.arange(257)
-    hist, bin_edges = np.histogram(a, bins = bins)  
-    # Pad counts with 1 (to eliminate zeros)    
-    hist = hist + 1
-    i = np.argmax(hist)
-    background_count = np.zeros((256))
-    background_count[0:(i + 1)] = hist[0:(i + 1)]
-    background_count[(i + 1):(2 * i + 1)] = hist[(i - 1)::-1]
-    probabilities = background_count / hist
-    return bin_edges[np.argmin(probabilities >= prob_background) - 1]
 
 def percent_background(a):
     if np.amax(a) <= 1:
