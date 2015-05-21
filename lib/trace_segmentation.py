@@ -11,9 +11,9 @@ from scipy.ndimage import label
 from skimage import color
 from skimage.filter import sobel, canny, threshold_otsu
 
-from Reverse_Medial_Axis import reverse_medial_axis
-from Binarization import fill_corners
-from Classes import segment, get_ridge_line
+from reverse_medial_axis import reverse_medial_axis
+from binarization import fill_corners
+from classes import segment, get_ridge_line
 
 def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
          ridges_h, ridges_v, figure=False):

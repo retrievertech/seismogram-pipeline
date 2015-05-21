@@ -18,11 +18,11 @@ from skimage.morphology import medial_axis
 
 from geojson import LineString, Feature, FeatureCollection, dump
 
-from Threshold import flatten_background
-from Ridge_Detection import find_ridges
-from Binarization import local_min, binary_image
-from Intersection_Detection import find_intersections
-from Trace_Segmentation import get_segments
+from lib.threshold import flatten_background
+from lib.ridge_detection import find_ridges
+from lib.binarization import local_min, binary_image
+from lib.intersection_detection import find_intersections
+from lib.trace_segmentation import get_segments
 
 from docopt import docopt
 

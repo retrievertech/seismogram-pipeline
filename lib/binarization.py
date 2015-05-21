@@ -11,8 +11,8 @@ from scipy.signal import convolve2d
 from skimage.morphology import watershed, remove_small_objects
 from skimage.filter import canny, sobel
 
-from Threshold import background_threshold
-from Ridge_Detection import find_ridges
+from threshold import background_threshold
+from ridge_detection import find_ridges
 
 def binary_image(image, markers_trace=None, markers_background=None,
                  min_trace_size=6, min_background_size=4):

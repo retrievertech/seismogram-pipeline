@@ -8,7 +8,7 @@ Created on Tue Feb 17 11:54:50 2015
 import numpy as np
 from skimage.draw import circle
 from scipy.stats import percentileofscore
-from Threshold import *
+from threshold import *
 
 def normalize(a):
   '''

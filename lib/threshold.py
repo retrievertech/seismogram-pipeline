@@ -10,7 +10,7 @@ from scipy.interpolate import SmoothBivariateSpline as spline2d
 from scipy.ndimage import distance_transform_edt
 from skimage.morphology import (convex_hull_image)
 from numpy.ma.core import MaskedArray
-from Mitchells_best_candidate import best_candidate_sample
+from mitchells_best_candidate import best_candidate_sample
   
 def threshold(a, threshold_function, num_blocks, block_dims = None, 
         smoothing_factor = 0.003, *args):
