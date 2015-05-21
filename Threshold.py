@@ -9,6 +9,7 @@ import numpy as np
 from scipy.interpolate import SmoothBivariateSpline as spline2d 
 from scipy.ndimage import distance_transform_edt
 from skimage.morphology import (convex_hull_image)
+from numpy.ma.core import MaskedArray
 from Mitchells_best_candidate import best_candidate_sample
     
 def threshold(a, threshold_function, num_blocks, block_dims = None, 
@@ -59,7 +60,10 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     
     for p in points:
         block = get_block(a, p, block_dims)
-        threshold = threshold_function(block, *args)
+        if (type(block) is MaskedArray):
+            threshold = threshold_function(block.compressed(), *args)
+        else:
+            threshold = threshold_function(block, *args)
         th.append(threshold)
     th = np.asarray(th)
     # Maybe consider using lower-order spline for large images 
