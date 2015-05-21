@@ -84,7 +84,13 @@ class IntersectionCollection:
   #     output_intersections(['Row', 'Column', 'Degree', 'Radius'], \
   #     intersections[:,0], intersections[:,1], degrees, radii)
 
-def find_intersections(image_bin, figure=True, labels=False):
+def find_intersections_from_file_path(input_path):
+  image = imread(input_path)
+  image = color.rgb2gray(image)
+  return find_intersections(image)
+
+def find_intersections(image_bin, image_skel=None, dist=None,
+             dendrite_threshold = 2.5, figure=True, labels=False):
   '''    
   Finds the intersections of traces by skeletonizing the image.
   
@@ -92,12 +98,21 @@ def find_intersections(image_bin, figure=True, labels=False):
   -------------
   image_bin : 2-D Boolean numpy array
     A binary image.
-  figure : bool
+  image_skel : 2-D Boolean numpy array, optional
+    The medial axis skeleton of image_bin.
+  dist : 2-D numpy array, optional
+    The distance transform of image_bin.
+  dendrite_threshold: float
+    This parameter adjusts the sensitivity of the detection algorithm.
+    The number is used to compare the sizes of candidate intersections with
+    the sizes of the branching traces. Lower numbers make the algorithm 
+    more sensitive. 
+  figure : bool, optional
     If True, function outputs a binary image with 
     pixels in intersection regions set to True. If set to False,
     function outputs a list of circular regions making up the 
     intersections.
-  labels : bool
+  labels : bool, optional
     If False (default), output is a binary image. If True, the 
     output of the function is an array with each intersection
     region given a unique ID.
@@ -108,9 +123,14 @@ def find_intersections(image_bin, figure=True, labels=False):
     An object containing all intersection and radius data,
     and providing functions to export the data to a file.
   '''
-  timeStart("skeletonize image")
-  image_skel,dist = medial_axis(image_bin, return_distance = True)
-  timeEnd("skeletonize image")
+  if (image_skel == None) or (dist == None):
+    timeStart("skeletonize image")
+    image_skel, dist = medial_axis(image_bin, return_distance = True)
+    timeEnd("skeletonize image")
+  else:
+    print "==> Skipping skeletonization. Image skeleton already provided."
+    image_skel = np.copy(image_skel)
+    dist = np.copy(dist)
 
   timeStart("prune skeleton")
   image_dead_ends = find_dead_ends(image_skel)
@@ -123,13 +143,13 @@ def find_intersections(image_bin, figure=True, labels=False):
   # path connects with other paths for the path to be considered
   # a trace. If the ratio falls below this threshold, the path is 
   # considered a "dendrite" and removed.
-  d_threshold = 2.5
   for d in dendrites:
     pix_i = d[0]    
     pix_f = d[-1]
     dendrite_displacement = np.sqrt( (pix_i[0] - pix_f[0]) ** 2 + 
                    (pix_i[1] - pix_f[1]) ** 2)
-    if dendrite_displacement < d_threshold * dist[pix_f[0], pix_f[1]]:
+    if dendrite_displacement < (dendrite_threshold * 
+                  dist[pix_f[0], pix_f[1]]):
       remove_pixels(image_skel,d)
   
   timeEnd("prune skeleton")
@@ -141,7 +161,13 @@ def find_intersections(image_bin, figure=True, labels=False):
   print "found %s junctions" % len(intersections)
 
   radii = get_intersection_sizes(intersections, dist)
-  return IntersectionCollection(intersections, radii, image_skel.shape)
+  if figure:    
+    image_intersections = mark_coords(image_bin.shape, intersections)
+    expand_junctions(image_intersections, intersections, radii)
+    #image_intersections = image_intersections.astype(float)    
+    return image_intersections
+  else:
+    return IntersectionCollection(intersections, radii, image_skel.shape)
 
 def find_dead_ends(skeleton):
   '''
