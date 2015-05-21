@@ -7,9 +7,43 @@ Created on Sun Nov  9 21:53:26 2014
 
 import numpy as np
 from math import sqrt
-from numpy.random import randint
+from numpy.random import randint, choice
 
-def best_candidate_sample(shape, num_samples, num_candidates = 10):
+def best_candidate_sample(coords, num_samples, num_candidates = 10):
+  '''
+  Sample points randomly from a 2-D array using Mitchell's Best Candidate 
+  sampling algorithm. Produces more even coverage of an array than simply
+  taking a number of uniform random samples. 
+  
+  Parameters
+  ------------
+  shape : 2-D array of ints
+    A list of candidate points.
+  num_samples : int
+    The number of samples to take. 
+  num_candidates : int, optional
+    The number of candidate samples to consider per sample point. 
+  
+  Returns
+  ---------
+  samples : 2-D numpy array of ints
+    The coordinates of the chosen sample points. The array has two columns
+    and num_samples rows. 
+  '''
+  samples = [get_candidates(coords,num_candidates)[0]]
+  for i in xrange(1,num_samples):
+    candidates = get_candidates(coords, num_candidates)
+    best_candidate = find_best_candidate(candidates, samples)
+    samples.append(best_candidate)
+  samples = np.asarray(samples)
+  return samples
+
+def get_candidates(coords, num_candidates):
+  random_indices = choice(len(coords), num_candidates)
+  candidates = coords[random_indices,:]
+  return candidates
+
+def best_candidate_sample_from_rect(shape, num_samples, num_candidates = 10):
   '''
   Sample points randomly from a 2-D array using Mitchell's Best Candidate 
   sampling algorithm. Produces more even coverage of an array than simply
@@ -30,15 +64,15 @@ def best_candidate_sample(shape, num_samples, num_candidates = 10):
     The coordinates of the chosen sample points. The array has two columns
     and num_samples rows. 
   '''
-  samples = [get_candidates(shape,num_candidates)[0]]
+  samples = [get_candidates_from_rect(shape,num_candidates)[0]]
   for i in xrange(1,num_samples):
-    candidates = get_candidates(shape, num_candidates)
+    candidates = get_candidates_from_rect(shape, num_candidates)
     best_candidate = find_best_candidate(candidates, samples)
     samples.append(best_candidate)
   samples = np.asarray(samples)
   return samples
     
-def get_candidates(shape, num_candidates):
+def get_candidates_from_rect(shape, num_candidates):
   candidates = np.zeros((num_candidates,2),dtype=int)
   candidates[:,0] = randint(0,high=shape[0],size=num_candidates)
   candidates[:,1] = randint(0,high=shape[1],size=num_candidates)
