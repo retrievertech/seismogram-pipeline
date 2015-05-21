@@ -143,7 +143,7 @@ def find_intersections(image_bin, image_skel=None, dist=None,
     if figure:    
         image_intersections = mark_coords(image_bin.shape, intersections)
         expand_junctions(image_intersections, intersections, radii)
-        image_intersections = image_intersections.astype(float)    
+        #image_intersections = image_intersections.astype(float)    
         return image_intersections
     else:
         return IntersectionCollection(intersections, radii, image_skel.shape)

@@ -6,16 +6,17 @@ Created on Wed Feb 25 13:58:26 2015
 """
 
 import numpy as np
-from skimage.morphology import (medial_axis, watershed, square, binary_erosion,
-                                square)
+from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
 from scipy.ndimage import label
 from skimage import color
 from skimage.filter import sobel, canny, threshold_otsu
 
 from Reverse_Medial_Axis import reverse_medial_axis
 from Binarization import fill_corners
+from Classes import segment, get_ridge_line
 
-def get_segments(img_gray, img_bin, img_skel, dist, img_intersections):
+def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
+                 ridges_h, ridges_v, figure=False):
     image_canny = canny(img_gray)
     img_bin = img_bin & (~ fill_corners(image_canny))
     
@@ -30,25 +31,42 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections):
     _, rmat_dist = medial_axis(rmat, return_distance=True)
     image_segments, num_segments = label(segments_bin, np.ones((3,3)))
     image_segments = watershed(-rmat_dist, image_segments, mask = rmat)
-    return image_segments
+    segments = img_seg_to_seg_objects(image_segments)
+    add_ridges_to_segments(ridges_h, ridges_v, segments)
+    if figure == False:
+        return segments
+    else:
+        return (segments, image_segments)
 
 '''
 store segments in objects
 '''
 
-'''
-dims = image_segments.shape
-ridge_crests = find_all_ridges(img_dark_removed)
+def img_seg_to_seg_objects(img_seg):
+    '''
+    Creates segment objects from an array of labeled pixels.    
+    
+    Parameters
+    ------------
+    img_seg : 2-D numpy array of ints
+        An array with each pixel labeled according to its segment. 
+    
+    Returns
+    --------
+    segments : list of segments
+        A list containing all the trace segments.
+    '''
+    dims = img_seg.shape
+    num_segments = np.amax(img_seg)    
+    segments = {}
+    for i in np.arange(1, num_segments + 1):
+        pixel_coords = np.argwhere(img_seg == i)
+        segments[i] = segment(pixel_coords, dims, ID=i)
+    return segments
 
-segments = []
-for i in np.arange(1, num_segments + 1):
-    pixel_coords = np.argwhere(image_segments == i)
-    seg = segment(pixel_coords, dims, ID=i)
-    seg.add_ridge_line(np.argwhere(seg.binary_image() & ridge_crests))
-    seg.plot_pixel_series()
-    #seg.plot_center_line()
-    segments.append(seg)
-'''
+def add_ridges_to_segments(ridges_h, ridges_v, segments):
+    for seg in segments.itervalues():
+        seg.add_ridge_line(get_ridge_line(ridges_h, ridges_v, seg.region))
 
 def image_overlay(img, overlay, mask = None):
     if img.ndim == 2:
@@ -59,15 +77,3 @@ def image_overlay(img, overlay, mask = None):
         mask = np.dstack((mask, mask, mask))
     images_combined = 0.5 * (img + overlay)
     return np.where(mask, img, images_combined)
-    
-def ridges_to_centerline(ridge_h, ridge_v):
-    domain_h = np.array([np.amin(ridge_h[:,1]), np.amax(ridge_v[:,1])],
-                         dtype=int)
-    domain_v = np.array([np.amin(ridge_v[:,1]), np.amax(ridge_v[:,1])],
-                         dtype=int)
-    if domain_v[0] < domain_h[0]:
-        ridge_v = ridge_v[(ridge_v[:,1] != domain_v[0]),:]
-    if domain_v[1] > domain_h[1]:
-        ridge_v = ridge_v[(ridge_v[:,1] != domain_v[1]),:]
-    ridge = np.vstack(ridge_h, ridge_v)
-    return ridge_line_to_series(ridge)
