@@ -314,7 +314,8 @@ def get_all_pixel_paths(pixel_array, dead_ends, max_path_length=-1):
   '''
   paths = []    
   for d_e in dead_ends:
-    conn, path = get_pixel_path(pixel_array, d_e, max_path_length)
+    conn, path = get_pixel_path(pixel_array, curr_pixel=d_e, 
+                                max_path_length=max_path_length)
     if conn >= 2:
       paths.append(path)
   return paths
