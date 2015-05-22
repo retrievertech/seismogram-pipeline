@@ -9,7 +9,7 @@ from skimage import color
 from skimage.morphology import dilation, erosion
 from scipy.signal import convolve2d
 from skimage.morphology import watershed, remove_small_objects
-from skimage.filter import canny, sobel
+from skimage.filters import canny, sobel
 
 from threshold import background_threshold
 from ridge_detection import find_ridges

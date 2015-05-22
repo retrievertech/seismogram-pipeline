@@ -9,7 +9,7 @@ import numpy as np
 from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
 from scipy.ndimage import label
 from skimage import color
-from skimage.filter import sobel, canny, threshold_otsu
+from skimage.filters import sobel, canny, threshold_otsu
 
 from reverse_medial_axis import reverse_medial_axis
 from binarization import fill_corners
