@@ -38,11 +38,11 @@ def analyze_image(in_file, out_file):
 
   # get region of interest
   print "\n--ROI--"
-  boundary = get_boundary(image)
+  boundary = get_boundary(img_gray)
   lines = get_box_lines(boundary)
   corners = get_roi_corners(lines)
   roi_polygon = corners_to_geojson(corners)["geometry"]["coordinates"][0]
-  masked_image = mask_image(image, roi_polygon)
+  masked_image = mask_image(img_gray, roi_polygon)
 
   print "\n--FLATTEN BACKGROUND--"
   img_dark_removed, dark_pixels = flatten_background(img_gray, 0.95, 
