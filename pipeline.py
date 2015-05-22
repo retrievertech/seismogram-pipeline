@@ -21,6 +21,8 @@ def analyze_image(in_file, out_file):
   timeStart("import libs")
   from lib.load_image import get_image
   from skimage.morphology import medial_axis
+
+  from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, corners_to_geojson
   from lib.polygon_mask import mask_image
   from lib.threshold import flatten_background
   from lib.ridge_detection import find_ridges
@@ -35,6 +37,11 @@ def analyze_image(in_file, out_file):
   timeEnd("read image")
 
   # get region of interest
+  boundary = get_boundary(image)
+  lines = get_box_lines(boundary)
+  corners = get_roi_corners(lines)
+  roi_polygon = corners_to_geojson(corners)["geometry"]["coordinates"][0]
+  masked_image = mask_image(image, roi_polygon)
 
   # (flatten background?)
   img_dark_removed, dark_pixels = flatten_background(img_gray, 0.95, 
