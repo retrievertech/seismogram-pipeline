@@ -16,15 +16,15 @@ import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 from skimage.morphology import medial_axis
 
-from geojson import LineString, Feature, FeatureCollection, dump
 
 from lib.threshold import flatten_background
 from lib.ridge_detection import find_ridges
 from lib.binarization import local_min, binary_image
 from lib.intersection_detection import find_intersections
-from lib.trace_segmentation import get_segments
 
 from docopt import docopt
+  from lib.trace_segmentation import get_segments, segments_to_geojson
+  from lib.geojson_io import save_features
 
 def analyze_image(img):
   # convert image to grayscale
@@ -48,25 +48,15 @@ def analyze_image(img):
   # break into segments
   segments = get_segments(img_gray, img_bin, img_skel, dist, intersections,
               ridges_h, ridges_v)    
+  segments_as_geojson = segments_to_geojson(segments)
+  save_features(segments_as_geojson, out_file)
   #return (img_gray, ridges, img_bin, intersections, img_seg)
-  return segments
+  # return segments
   # detect center lines
   
   # connect segments
   
   # output data
-
-def save_segments_as_geojson(segments, filepath):
-  geojson_line_segments = []
-  for seg in segments.itervalues():
-    if seg.has_center_line == True:
-      center_line = zip(seg.center_line.x, seg.center_line.y)
-      feature = Feature(geometry = LineString(center_line))
-      geojson_line_segments.append(feature)
-  geojson_line_segments = FeatureCollection(geojson_line_segments)
-  with open(filepath, 'w') as outfile:
-    dump(geojson_line_segments, outfile)
-
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)

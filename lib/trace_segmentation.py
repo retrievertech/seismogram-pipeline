@@ -14,6 +14,7 @@ from skimage.filters import sobel, canny, threshold_otsu
 from reverse_medial_axis import reverse_medial_axis
 from binarization import fill_corners
 from classes import segment, get_ridge_line
+from geojson import LineString, Feature, FeatureCollection
 
 def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
          ridges_h, ridges_v, figure=False):
@@ -77,3 +78,13 @@ def image_overlay(img, overlay, mask = None):
     mask = np.dstack((mask, mask, mask))
   images_combined = 0.5 * (img + overlay)
   return np.where(mask, img, images_combined)
+
+def segments_to_geojson(segments):
+  geojson_line_segments = []
+  for seg in segments.itervalues():
+    if seg.has_center_line == True:
+      center_line = zip(seg.center_line.x, seg.center_line.y)
+      feature = Feature(geometry = LineString(center_line))
+      geojson_line_segments.append(feature)
+  geojson_line_segments = FeatureCollection(geojson_line_segments)
+  return geojson_line_segments
