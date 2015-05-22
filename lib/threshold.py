@@ -54,8 +54,8 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     return (np.ones_like(a) * threshold_function(a, *args))
 
   if (mask is None):
-    mask = np.ones(*a_dims)
-    
+    mask = np.zeros(a_dims, dtype=bool)
+
   candidate_coords = np.transpose(np.nonzero(~mask))
   
   if block_dims is None:
