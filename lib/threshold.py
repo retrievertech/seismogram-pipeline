@@ -13,7 +13,7 @@ from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
   
 def threshold(a, threshold_function, num_blocks, block_dims = None, 
-        smoothing_factor = 0.003, *args):
+        smoothing_factor = 0.003, mask = None, *args):
   '''
   Get a smoothly varing threshold from an image by applying the threshold 
   function to multiple randomly positioned blocks of the image and using
@@ -52,11 +52,17 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     spline_order = int(np.sqrt(num_blocks) - 1)
   if spline_order == 0:
     return (np.ones_like(a) * threshold_function(a, *args))
+
+  if (mask is None):
+    mask = np.ones(*a_dims)
+    
+  candidate_coords = np.transpose(np.nonzero(~mask))
+  
   if block_dims is None:
     block_dim = int(round(np.sqrt(2 * a.size / num_blocks)))
     block_dims = (block_dim, block_dim)
-  points = best_candidate_sample(a_dims, num_blocks)
-  th = []    
+  points = best_candidate_sample(candidate_coords, num_blocks)
+  th = []
   
   for p in points:
     block = get_block(a, p, block_dims)
@@ -66,6 +72,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
       threshold = threshold_function(block, *args)
     th.append(threshold)
   th = np.asarray(th)
+
   # Maybe consider using lower-order spline for large images 
   # (if large indices create problems for cubic functions)
   fit = spline2d(points[:,0], points[:,1], th, 
@@ -291,7 +298,7 @@ def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None,
   return th
 
 def flatten_background(img, prob_background = 1, num_blocks = None, 
-             block_dims = None, return_background = False):
+             block_dims = None, return_background = False, mask = None):
   '''
   Finds the pixel intensity at every location in the image below which the 
   pixel is likely part of the dark background. Pixels darker than this 
@@ -328,7 +335,7 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
   background_level = threshold(img, background_intensity, num_blocks, 
-                 block_dims, 0.003, prob_background)
+                 block_dims, 0.003, mask, prob_background)
   background = img < background_level
   flattened = np.where(background, background_level, img)
   if return_background == False:

@@ -45,7 +45,8 @@ def analyze_image(in_file, out_file):
 
   # (flatten background?)
   img_dark_removed, dark_pixels = flatten_background(img_gray, 0.95, 
-                             return_background=True)
+                             return_background=True, mask=masked_image.mask)
+  
   # get horizontal and vertical ridges
   background = dark_pixels | local_min(img_gray)    
   ridges_h, ridges_v = find_ridges(img_dark_removed, background)
