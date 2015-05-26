@@ -40,7 +40,7 @@ def detect_meanlines(masked_image, scale=1, debug_dir=False):
     for line in line_coords:
       rr, cc = line
       mask = (rr >= 0) & (rr < debug_image.shape[0]) & (cc >= 0) & (cc < debug_image.shape[1])
-      debug_image[rr[mask], cc[mask]] = [255, 0, 0]
+      debug_image[rr[mask], cc[mask]] = [1.0, 0, 0]
     misc.imsave(debug_dir+"/mean_lines.png", debug_image)
 
   return lines
