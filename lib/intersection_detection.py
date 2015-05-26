@@ -7,7 +7,6 @@ Created on Thu Jan 29 14:38:19 2015
 
 from timer import timeStart, timeEnd
 
-timeStart("import libs")
 import numpy as np
 from matplotlib.pyplot import imread
 import csv
@@ -20,7 +19,6 @@ from skimage.io import imsave
 from lib.draw import circle
 
 import geojson
-timeEnd("import libs")
 
 class IntersectionCollection:
   '''

@@ -1,6 +1,5 @@
 from timer import timeStart, timeEnd
 
-timeStart("import libs")
 from threshold_image import threshold_image
 from hough_lines import get_hough_lines
 from skimage.morphology import remove_small_objects
@@ -9,7 +8,6 @@ import numpy as np
 import skimage.draw as skidraw
 from skimage.color import gray2rgb
 import geojson
-timeEnd("import libs")
 
 PARAMS = {
   "small-object-size": lambda scale: int(500*scale*scale)

@@ -1,6 +1,5 @@
 from timer import timeStart, timeEnd
 
-timeStart("import libs")
 import numpy as np
 from scipy import misc
 from scipy.ndimage.morphology import binary_opening
@@ -19,7 +18,6 @@ from threshold_image import threshold_image
 
 import matplotlib.pyplot as plt
 import geojson
-timeEnd("import libs")
 
 PARAMS = {
   "disk-size": lambda scale: int(17*scale)

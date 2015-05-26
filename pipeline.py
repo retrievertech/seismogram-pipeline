@@ -19,7 +19,6 @@ from docopt import docopt
 def analyze_image(in_file, out_file, scale):
   from lib.timer import timeStart, timeEnd
 
-  timeStart("import libs")
   from lib.load_image import get_image
   from skimage.morphology import medial_axis
 
@@ -31,7 +30,6 @@ def analyze_image(in_file, out_file, scale):
   from lib.intersection_detection import find_intersections
   from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features
-  timeEnd("import libs")
 
   timeStart("read image")
   img_gray = get_image(in_file)
