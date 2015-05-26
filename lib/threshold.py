@@ -5,6 +5,8 @@ Created on Fri Feb 13 13:05:12 2015
 @author: benamy
 """
 
+from lib.timer import timeStart, timeEnd
+
 import numpy as np
 from scipy.interpolate import SmoothBivariateSpline as spline2d 
 from scipy.ndimage import distance_transform_edt
@@ -61,9 +63,13 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   if block_dims is None:
     block_dim = int(round(np.sqrt(2 * a.size / num_blocks)))
     block_dims = (block_dim, block_dim)
+
+  timeStart("select block coordinates")
   points = best_candidate_sample(candidate_coords, num_blocks)
-  th = []
+  timeEnd("select block coordinates")
   
+  timeStart("calculate thresholds")
+  th = []
   for p in points:
     block = get_block(a, p, block_dims)
     if (type(block) is MaskedArray):
@@ -72,7 +78,9 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
       threshold = threshold_function(block, *args)
     th.append(threshold)
   th = np.asarray(th)
+  timeEnd("calculate thresholds")
 
+  timeStart("fit 2-D spline")
   # Maybe consider using lower-order spline for large images 
   # (if large indices create problems for cubic functions)
   fit = spline2d(points[:,0], points[:,1], th, 
@@ -81,6 +89,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
            s = num_blocks * smoothing_factor)
   th_new = fit(x = np.arange(a_dims[0]), y = np.arange(a_dims[1])) 
   th_new = fix_border(th_new, points)
+  timeEnd("fit 2-D spline")
   return th_new
   
 def get_block(a, center, block_dims):
@@ -334,11 +343,21 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
   # Default number of blocks assumes 500x500 blocks are a good size
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
+
+  timeStart("calculate background threshold")
   background_level = threshold(img, background_intensity, num_blocks, 
                  block_dims, 0.003, mask, prob_background)
+  timeEnd("calculate background threshold")
+
+  timeStart("select background pixels")
   background = img < background_level
+  timeEnd("select background pixels")
+
+  timeStart("raise background pixels")
   flattened = np.where(background, background_level, img)
-  if return_background == False:
+  timeEnd("raise background pixels")
+
+  if return_background is False:
     return flattened
   else:
     return (flattened, background)

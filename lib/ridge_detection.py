@@ -12,6 +12,7 @@ Created on Wed Feb 11 18:20:36 2015
 @author: benamy
 """
 
+from lib.timer import timeStart, timeEnd
 
 import numpy as np
 from math import log
@@ -61,16 +62,24 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   
   '''
   #preliminaries
+  timeStart("gaussian_laplace filter")
   laplacian = gaussian_laplace(img, 2)
+  timeEnd("gaussian_laplace filter")
+
   convex = laplacian > convex_threshold
   
+  timeStart("sobel filters x & y")
   abs_isobel = np.abs(ndimage.sobel(img, axis=0))
   abs_jsobel = np.abs(ndimage.sobel(img, axis=1))
+  timeEnd("sobel filters x & y")
+
+  timeStart("otsu thresholds x & y")
   vertical_slopes = abs_isobel > threshold_otsu(abs_isobel)
-  horizontal_slopes = abs_jsobel > threshold_otsu(abs_jsobel)    
+  horizontal_slopes = abs_jsobel > threshold_otsu(abs_jsobel)
+  timeEnd("otsu thresholds x & y")
   
   k = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
-  
+  timeStart("create gaussian image pyramid at "+str(k)+" scales")
   # a geometric progression of standard deviations for gaussian kernels
   sigma_list = np.array([min_sigma * (sigma_ratio ** i)
               for i in range(k + 1)])
@@ -79,19 +88,19 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             for s in sigma_list]
   gaussian_blurs_v = [gaussian_filter1d(img, s, 1) \
             for s in sigma_list]
+  timeEnd("create gaussian image pyramid at "+str(k)+" scales")
   
   image_cube_h = np.zeros((img.shape[0], img.shape[1], k))    
   image_cube_v = np.zeros((img.shape[0], img.shape[1], k))      
-  exclusion = np.zeros((img.shape[0], img.shape[1], k), 
-             dtype = bool) 
+  exclusion = np.zeros((img.shape[0], img.shape[1], k), dtype = bool) 
+  
+  timeStart("find horizontal ridges")
   exclusion_layer = dark_pixels | convex | horizontal_slopes
   for i in range(k):
     image_cube_h[:,:,i] = ((gaussian_blurs_h[i] - gaussian_blurs_h[i + 1]))
-    exclusion_layer = (exclusion_layer |
-               (image_cube_h[:,:,i] < -convex_threshold))
+    exclusion_layer = (exclusion_layer | (image_cube_h[:,:,i] < -convex_threshold))
     exclusion[:,:,i] = exclusion_layer
   
-  # Find horizontal ridges
   footprint_h = np.ones((3,1,3), dtype=bool)
   image_cube_h_norm = normalize(image_cube_h)
   maxima_h = peak_local_max(image_cube_h_norm, indices=False, min_distance=1, 
@@ -99,15 +108,16 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
           footprint = footprint_h)
   maxima_h = maxima_h & (~exclusion) & (image_cube_h >= low_threshold)
   ridges_h = np.amax(maxima_h, axis=-1)
+
   image_cube_h = np.where(maxima_h, image_cube_h, 0)
   max_values_h = np.amax(image_cube_h, axis = -1)
+  timeEnd("find horizontal ridges")
   
-  # Find vertical ridges
+  timeStart("find vertical ridges")
   exclusion_layer = dark_pixels | convex | vertical_slopes
   for i in range(k):
     image_cube_v[:,:,i] = ((gaussian_blurs_v[i] - gaussian_blurs_v[i + 1]))
-    exclusion_layer = (exclusion_layer |
-               (image_cube_v[:,:,i] < convex_threshold))
+    exclusion_layer = (exclusion_layer | (image_cube_v[:,:,i] < convex_threshold))
     exclusion[:,:,i] = exclusion_layer
   
   footprint_v = np.ones((1,3,3), dtype=bool)
@@ -120,6 +130,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   
   image_cube_v = np.where(maxima_v, image_cube_v, 0)
   max_values_v = np.amax(image_cube_v, axis = -1)    
+  timeEnd("find vertical ridges")
   
   # Horiztonal ridges need to be prominent
   ridges_h = ridges_h & (max_values_h >= high_threshold)

@@ -63,6 +63,8 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   image_segments = watershed(-rmat_dist, image_segments, mask = rmat)
   timeEnd("watershed")
 
+  print "found %s segments" % len(image_segments)
+
   timeStart("create segment objects")
   segments = img_seg_to_seg_objects(image_segments)
   timeEnd("create segment objects")

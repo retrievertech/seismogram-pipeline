@@ -49,37 +49,40 @@ def analyze_image(in_file, out_file, scale):
   img_dark_removed, dark_pixels = flatten_background(img_gray, 0.95, 
                              return_background=True, mask=masked_image.mask)
   
-  # get horizontal and vertical ridges
   print "\n--RIDGES--"
+  timeStart("get horizontal and vertical ridges")
   background = dark_pixels | local_min(img_gray)    
   ridges_h, ridges_v = find_ridges(img_dark_removed, background)
   ridges = ridges_h | ridges_v
+  timeEnd("get horizontal and vertical ridges")
   
-  # get binary image
   print "\n--THRESHOLDING--"
+  timeStart("get binary image")
   img_bin = binary_image(img_dark_removed, markers_trace=ridges,
                markers_background=background)
+  timeEnd("get binary image")
   
-  # get medial axis skeleton and distance transform
   print "\n--SKELETONIZE--"
+  timeStart("get medial axis skeleton and distance transform")
   img_skel, dist = medial_axis(img_bin, return_distance=True)
+  timeEnd("get medial axis skeleton and distance transform")
 
-  # detect intersections
   print "\n--INTERSECTIONS--"
   intersections = find_intersections(img_bin, img_skel, dist)
   
-  # break into segments
   print "\n--SEGMENTS--"
+  timeStart("get segments")
   segments = get_segments(img_gray, img_bin, img_skel, dist, intersections,
-              ridges_h, ridges_v)    
+              ridges_h, ridges_v)
+  timeEnd("get segments")
   
-  timeStart("convert to geojson")
+  timeStart("convert segments to geojson")
   segments_as_geojson = segments_to_geojson(segments)
-  timeEnd("convert to geojson")
+  timeEnd("convert segments to geojson")
   
-  timeStart("saving as geojson")
+  timeStart("saving segments as geojson")
   save_features(segments_as_geojson, out_file)
-  timeEnd("saving as geojson")
+  timeEnd("saving segments as geojson")
 
   #return (img_gray, ridges, img_bin, intersections, img_seg)
   # return segments
