@@ -123,7 +123,7 @@ def find_intersections(image_bin, image_skel=None, dist=None,
     An object containing all intersection and radius data,
     and providing functions to export the data to a file.
   '''
-  if (image_skel == None) or (dist == None):
+  if (image_skel is None) or (dist is None):
     timeStart("skeletonize image")
     image_skel, dist = medial_axis(image_bin, return_distance = True)
     timeEnd("skeletonize image")
