@@ -5,7 +5,7 @@ Created on Tue Dec  2 17:59:00 2014
 @author: benamy
 """
 import numpy as np
-from skimage.draw import circle
+from lib.draw import circle
 
 def reverse_medial_axis(mat, dist):
   '''
