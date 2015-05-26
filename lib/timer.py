@@ -2,10 +2,17 @@ import sys
 from time import time
 
 timeDict = {}
+depth = 0
+nested = False
+
 def timeStart(key, immediate=True):
   timeDict[key] = time()
   if immediate:
-    printStart(key)
+    printStart(key, nested)
+
+  global depth, nested
+  depth += 1
+  nested = True
 
 def timeEnd(key, immediate=True):
   if not immediate:
@@ -13,9 +20,19 @@ def timeEnd(key, immediate=True):
   printEnd(key)
   del timeDict[key]
 
-def printStart(key):
-  sys.stdout.write(key+" ... ")
+  global depth, nested
+  depth -= 1
+  nested = False
+
+def printStart(key, nested):
+  indent = getIndent()
+  if (nested is True):
+    sys.stdout.write("\n")
+  sys.stdout.write(indent+key+" ... ")
   sys.stdout.flush()
 
 def printEnd(key):
-  sys.stdout.write(str(time() - timeDict[key])+"s \n")
+  sys.stdout.write(str(time() - timeDict[key]) + "s \n")
+
+def getIndent():
+  return ''.join(["  " for i in range(depth)])

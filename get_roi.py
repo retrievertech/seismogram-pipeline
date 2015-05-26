@@ -28,7 +28,7 @@ def get_roi(in_file, out_file, scale=1, debug_dir=False):
   from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, corners_to_geojson
   from lib.geojson_io import save_features
 
-  timeStart("DONE", immediate=False)
+  timeStart("ROI")
 
   timeStart("read image")
   image = get_image(in_file)
@@ -46,7 +46,7 @@ def get_roi(in_file, out_file, scale=1, debug_dir=False):
   save_features(corners_as_geojson, out_file)
   timeEnd("saving as geojson")
 
-  timeEnd("DONE", immediate=False)
+  timeEnd("ROI")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
