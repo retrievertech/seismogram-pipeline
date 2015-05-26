@@ -12,7 +12,7 @@ import numpy as np
 from matplotlib.pyplot import imread
 import csv
 from scipy.signal import convolve2d
-from scipy.ndimage import label
+# from scipy.ndimage import label
 
 from skimage.morphology import medial_axis
 from skimage import color
