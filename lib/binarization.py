@@ -9,7 +9,8 @@ from skimage import color
 from skimage.morphology import dilation, erosion
 from scipy.signal import convolve2d
 from skimage.morphology import watershed, remove_small_objects
-from skimage.filters import canny, sobel
+from skimage.filters import sobel
+from skimage.feature import canny
 
 from threshold import background_threshold
 from ridge_detection import find_ridges
@@ -32,9 +33,9 @@ def binary_image(image, markers_trace=None, markers_background=None,
   '''
   if image.ndim != 2:
     image = color.rgb2gray(image)
-  if markers_background == None:
+  if markers_background is None:
     markers_background = get_background_markers(image)
-  if markers_trace == None: 
+  if markers_trace is None: 
     markers_trace = get_trace_markers(image, markers_background)
   image_bin = watershed_segmentation(image, markers_trace, 
                      markers_background)
