@@ -6,21 +6,23 @@ depth = 0
 nested = False
 
 def timeStart(key, immediate=True):
+  global depth, nested
+
   timeDict[key] = time()
   if immediate:
     printStart(key, nested)
 
-  global depth, nested
   depth += 1
   nested = True
 
 def timeEnd(key, immediate=True):
+  global depth, nested
+
   if not immediate:
     printStart(key)
   printEnd(key)
   del timeDict[key]
 
-  global depth, nested
   depth -= 1
   nested = False
 
