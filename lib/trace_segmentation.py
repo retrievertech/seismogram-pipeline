@@ -5,6 +5,8 @@ Created on Wed Feb 25 13:58:26 2015
 @author: benamy
 """
 
+from lib.timer import timeStart, timeEnd
+
 import numpy as np
 from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
 from scipy.ndimage import label
@@ -18,22 +20,56 @@ from geojson import LineString, Feature, FeatureCollection
 
 def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
          ridges_h, ridges_v, figure=False):
+  timeStart("canny edge detection")
   image_canny = canny(img_gray)
+  timeEnd("canny edge detection")
+
+  timeStart("bitwise & and ~")
   img_bin = img_bin & (~ fill_corners(image_canny))
+  timeEnd("bitwise & and ~")
   
+  timeStart("sobel filter")
   image_sobel = sobel(img_gray)
+  timeEnd("sobel filter")
+
+  timeStart("otsu threshold")
   steep_slopes = image_sobel > threshold_otsu(image_sobel)
+  timeEnd("otsu threshold")
+
+  timeStart("binary erosion")
   steep_slopes = binary_erosion(steep_slopes, square(3, dtype=bool))
+  timeEnd("binary erosion")
+
+  timeStart("bitwise & and ~")
   segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) & 
           (~ steep_slopes))
-          
+  timeEnd("bitwise & and ~")
+
+  timeStart("reverse medial axis", immediate=False)
   rmat = reverse_medial_axis(segments_bin, dist)
+  timeEnd("reverse medial axis", immediate=False)
+
   # maybe, instead of running medial_axis again, do nearest-neighbor interp    
+  timeStart("skeletonize")
   _, rmat_dist = medial_axis(rmat, return_distance=True)
+  timeEnd("skeletonize")
+
+  timeStart("label segments")
   image_segments, num_segments = label(segments_bin, np.ones((3,3)))
+  timeEnd("label segments")
+
+  timeStart("watershed")
   image_segments = watershed(-rmat_dist, image_segments, mask = rmat)
+  timeEnd("watershed")
+
+  timeStart("create segment objects")
   segments = img_seg_to_seg_objects(image_segments)
+  timeEnd("create segment objects")
+
+  timeStart("add ridges to segments")
   add_ridges_to_segments(ridges_h, ridges_v, segments)
+  timeEnd("add ridges to segments")
+
   if figure == False:
     return segments
   else:
