@@ -18,4 +18,4 @@ def printStart(key):
   sys.stdout.flush()
 
 def printEnd(key):
-  sys.stdout.write(str(time() - timeDict[key])[:6]+"s \n")
+  sys.stdout.write(str(time() - timeDict[key])+"s \n")
