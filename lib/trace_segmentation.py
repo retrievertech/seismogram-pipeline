@@ -63,7 +63,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   image_segments = watershed(-rmat_dist, image_segments, mask = rmat)
   timeEnd("watershed")
 
-  print "found %s segments" % len(image_segments)
+  print "found %s segments" % np.amax(image_segments)
 
   timeStart("create segment objects")
   segments = img_seg_to_seg_objects(image_segments)
@@ -97,7 +97,7 @@ def img_seg_to_seg_objects(img_seg):
     A list containing all the trace segments.
   '''
   dims = img_seg.shape
-  num_segments = np.amax(img_seg)    
+  num_segments = np.amax(img_seg)
   segments = {}
   for i in np.arange(1, num_segments + 1):
     pixel_coords = np.argwhere(img_seg == i)
