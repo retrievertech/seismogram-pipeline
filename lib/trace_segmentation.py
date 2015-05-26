@@ -46,9 +46,9 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
           (~ steep_slopes))
   timeEnd("bitwise & and ~")
 
-  timeStart("reverse medial axis", immediate=False)
+  timeStart("reverse medial axis")
   rmat = reverse_medial_axis(segments_bin, dist)
-  timeEnd("reverse medial axis", immediate=False)
+  timeEnd("reverse medial axis")
 
   # maybe, instead of running medial_axis again, do nearest-neighbor interp    
   timeStart("skeletonize")
