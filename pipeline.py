@@ -3,19 +3,20 @@
 Description:
 
 Usage:
-  pipeline.py --image <filename> --output <filename>
+  pipeline.py --image <filename> --output <filename> [--scale <scale>]
   pipeline.py -h | --help
 
 Options:
   -h --help             Show this screen.
   --image <filename>    Filename of seismogram.
   --output <directory>  Filename of geojson output.
+  --scale <scale>       1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
 
 """
 
 from docopt import docopt
 
-def analyze_image(in_file, out_file):
+def analyze_image(in_file, out_file, scale):
   from lib.timer import timeStart, timeEnd
 
   timeStart("import libs")
@@ -38,7 +39,7 @@ def analyze_image(in_file, out_file):
 
   # get region of interest
   print "\n--ROI--"
-  boundary = get_boundary(img_gray)
+  boundary = get_boundary(img_gray, scale=scale)
   lines = get_box_lines(boundary)
   corners = get_roi_corners(lines)
   roi_polygon = corners_to_geojson(corners)["geometry"]["coordinates"][0]
@@ -92,8 +93,9 @@ if __name__ == '__main__':
   arguments = docopt(__doc__)
   in_file = arguments["--image"]
   out_file = arguments["--output"]
+  scale = float(arguments["--scale"])
 
   if (in_file and out_file):
-    segments = analyze_image(in_file, out_file)
+    segments = analyze_image(in_file, out_file, scale)
   else:
     print(arguments)
