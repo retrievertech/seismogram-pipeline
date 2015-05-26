@@ -34,4 +34,3 @@ def reverse_medial_axis(mat, dist):
     rr, cc = circle(p[0], p[1], radius, dims)
     r_mat[rr, cc] = True
   return r_mat
-

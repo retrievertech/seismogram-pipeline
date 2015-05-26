@@ -63,7 +63,7 @@ def analyze_image(in_file, out_file, scale):
   # get medial axis skeleton and distance transform
   print "\n--SKELETONIZE--"
   img_skel, dist = medial_axis(img_bin, return_distance=True)
-  
+
   # detect intersections
   print "\n--INTERSECTIONS--"
   intersections = find_intersections(img_bin, img_skel, dist)
