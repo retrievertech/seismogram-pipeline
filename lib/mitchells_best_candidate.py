@@ -17,7 +17,7 @@ def best_candidate_sample(coords, num_samples, num_candidates = 10):
   
   Parameters
   ------------
-  shape : 2-D array of ints
+  coords : 2-D array of ints
     A list of candidate points.
   num_samples : int
     The number of samples to take. 
