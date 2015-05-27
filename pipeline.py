@@ -3,7 +3,7 @@
 Description:
 
 Usage:
-  pipeline.py --image <filename> --output <filename> [--scale <scale>]
+  pipeline.py --image <filename> --output <filename> [--scale <scale>] [--debug <directory>]
   pipeline.py -h | --help
 
 Options:
@@ -11,12 +11,18 @@ Options:
   --image <filename>    Filename of seismogram.
   --output <directory>  Filename of geojson output.
   --scale <scale>       1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
+  --debug <directory>   Save intermediate steps as images for inspection in <directory>.
 
 """
 
 from docopt import docopt
 
-def analyze_image(in_file, out_file, scale):
+def analyze_image(in_file, out_file, scale=1, debug_dir=False):
+
+  if debug_dir:
+    from lib.dir import ensure_dir_exists
+    ensure_dir_exists(debug_dir)
+
   from lib.timer import timeStart, timeEnd
 
   from lib.load_image import get_image
@@ -30,18 +36,23 @@ def analyze_image(in_file, out_file, scale):
   from lib.intersection_detection import find_intersections
   from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features
+  from scipy import misc
 
   timeStart("read image")
   img_gray = get_image(in_file)
   timeEnd("read image")
 
-  # get region of interest
   print "\n--ROI--"
-  boundary = get_boundary(img_gray, scale=scale)
-  lines = get_box_lines(boundary)
-  corners = get_roi_corners(lines)
+  timeStart("get region of interest")
+  boundary = get_boundary(img_gray, scale=scale, debug_dir=debug_dir)
+  lines = get_box_lines(boundary, debug_dir=debug_dir, image=img_gray)
+  corners = get_roi_corners(lines, debug_dir=debug_dir, image=img_gray)
   roi_polygon = corners_to_geojson(corners)["geometry"]["coordinates"][0]
   masked_image = mask_image(img_gray, roi_polygon)
+  timeEnd("get region of interest")
+
+  if debug_dir:
+    misc.imsave(debug_dir+"/masked_image.png", masked_image.filled(0))
 
   print "\n--FLATTEN BACKGROUND--"
   img_dark_removed, dark_pixels = flatten_background(masked_image, 0.95, 
@@ -95,8 +106,9 @@ if __name__ == '__main__':
   in_file = arguments["--image"]
   out_file = arguments["--output"]
   scale = float(arguments["--scale"])
+  debug_dir = arguments["--debug"]
 
   if (in_file and out_file):
-    segments = analyze_image(in_file, out_file, scale)
+    segments = analyze_image(in_file, out_file, scale, debug_dir)
   else:
     print(arguments)
