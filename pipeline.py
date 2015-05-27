@@ -44,8 +44,8 @@ def analyze_image(in_file, out_file, scale):
   masked_image = mask_image(img_gray, roi_polygon)
 
   print "\n--FLATTEN BACKGROUND--"
-  img_dark_removed, dark_pixels = flatten_background(img_gray, 0.95, 
-                             return_background=True, mask=masked_image.mask)
+  img_dark_removed, dark_pixels = flatten_background(masked_image, 0.95, 
+                             return_background=True)
   
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")

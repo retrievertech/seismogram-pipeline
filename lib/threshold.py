@@ -15,7 +15,7 @@ from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
   
 def threshold(a, threshold_function, num_blocks, block_dims = None, 
-        smoothing_factor = 0.003, mask = None, *args):
+        smoothing_factor = 0.003, *args):
   '''
   Get a smoothly varing threshold from an image by applying the threshold 
   function to multiple randomly positioned blocks of the image and using
@@ -55,7 +55,9 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   if spline_order == 0:
     return (np.ones_like(a) * threshold_function(a, *args))
 
-  if (mask is None):
+  if (type(a) is MaskedArray):
+    mask = a.mask
+  else:
     mask = np.zeros(a_dims, dtype=bool)
 
   candidate_coords = np.transpose(np.nonzero(~mask))
@@ -307,7 +309,7 @@ def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None,
   return th
 
 def flatten_background(img, prob_background = 1, num_blocks = None, 
-             block_dims = None, return_background = False, mask = None):
+             block_dims = None, return_background = False):
   '''
   Finds the pixel intensity at every location in the image below which the 
   pixel is likely part of the dark background. Pixels darker than this 
@@ -346,7 +348,7 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
 
   timeStart("calculate background threshold")
   background_level = threshold(img, background_intensity, num_blocks, 
-                 block_dims, 0.003, mask, prob_background)
+                 block_dims, 0.003, prob_background)
   timeEnd("calculate background threshold")
 
   timeStart("select background pixels")
