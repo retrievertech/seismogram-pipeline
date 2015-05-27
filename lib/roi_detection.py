@@ -133,12 +133,13 @@ def get_roi_corners(lines, debug_dir = False, image = None):
   timeEnd("find intersections")
 
   if debug_dir:
+    image_copy = np.copy(image)
     inner_circles = { corner_name: skidraw.circle(corner[1], corner[0], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
     outer_circles = { corner_name: skidraw.circle(corner[1], corner[0], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:
-      image[outer_circles[corner_name]] = 0.0
-      image[inner_circles[corner_name]] = 1.0
-    misc.imsave(debug_dir+"/roi_corners.png", image)
+      image_copy[outer_circles[corner_name]] = 0.0
+      image_copy[inner_circles[corner_name]] = 1.0
+    misc.imsave(debug_dir+"/roi_corners.png", image_copy)
 
   return corners
 
