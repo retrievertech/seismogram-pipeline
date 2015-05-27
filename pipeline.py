@@ -3,13 +3,13 @@
 Description:
 
 Usage:
-  pipeline.py --image <filename> --output <filename> [--scale <scale>] [--debug <directory>]
+  pipeline.py --image <filename> --output <directory> [--scale <scale>] [--debug <directory>]
   pipeline.py -h | --help
 
 Options:
   -h --help             Show this screen.
   --image <filename>    Filename of seismogram.
-  --output <directory>  Filename of geojson output.
+  --output <directory>  Save metadata in <directory>.
   --scale <scale>       1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
   --debug <directory>   Save intermediate steps as images for inspection in <directory>.
 
@@ -17,11 +17,13 @@ Options:
 
 from docopt import docopt
 
-def analyze_image(in_file, out_file, scale=1, debug_dir=False):
-
+def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
+  from lib.dir import ensure_dir_exists
+  
   if debug_dir:
-    from lib.dir import ensure_dir_exists
     ensure_dir_exists(debug_dir)
+
+  ensure_dir_exists(out_dir)
 
   from lib.timer import timeStart, timeEnd
 
@@ -104,11 +106,11 @@ def analyze_image(in_file, out_file, scale=1, debug_dir=False):
 if __name__ == '__main__':
   arguments = docopt(__doc__)
   in_file = arguments["--image"]
-  out_file = arguments["--output"]
+  out_dir = arguments["--output"]
   scale = float(arguments["--scale"])
   debug_dir = arguments["--debug"]
 
-  if (in_file and out_file):
-    segments = analyze_image(in_file, out_file, scale, debug_dir)
+  if (in_file and out_dir):
+    segments = analyze_image(in_file, out_dir, scale, debug_dir)
   else:
     print(arguments)
