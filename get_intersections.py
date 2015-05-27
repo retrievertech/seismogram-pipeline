@@ -29,8 +29,10 @@ def get_intersections(in_file, out_file, roi_file, debug_dir=False):
   from lib.load_image import get_image
   from lib.load_geojson import get_features
   from lib.polygon_mask import mask_image
+  from lib.geojson_io import save_features
+  from skimage.io import imsave
 
-  timeStart("DONE", immediate=False)
+  timeStart("get intersections")
 
   timeStart("read image")
   grayscale_image = get_image(in_file)
@@ -45,16 +47,18 @@ def get_intersections(in_file, out_file, roi_file, debug_dir=False):
   intersections = find_intersections(masked_image.filled(False), figure=False)
 
   timeStart("saving to "+ out_file)
-  intersections.exportAsGeoJSON(out_file)
+  intersections_as_geojson = intersections.asGeoJSON()
+  save_features(intersections_as_geojson, out_file)
   timeEnd("saving to "+ out_file)
 
   if debug_dir:
     debug_filepath = debug_dir + "/intersections.png"
     timeStart("saving to "+ debug_filepath)
-    intersections.exportAsImage(debug_filepath)
+    intersections_as_image = intersections.asImage().astype(float)
+    imsave(debug_filepath, intersections_as_image)
     timeEnd("saving to "+ debug_filepath)
 
-  timeEnd("DONE", immediate=False)
+  timeEnd("get intersections")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
