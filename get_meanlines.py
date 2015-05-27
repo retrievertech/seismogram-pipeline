@@ -32,7 +32,7 @@ def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   from lib.polygon_mask import mask_image
   from lib.meanline_detection import detect_meanlines, meanlines_to_geojson
 
-  timeStart("DONE", immediate=False)
+  timeStart("get meanlines")
 
   timeStart("read image")
   image = get_image(in_file)
@@ -54,7 +54,7 @@ def get_meanlines(in_file, out_file, roi_file, scale=1, debug_dir=False):
   save_features(meanlines_as_geojson, out_file)
   timeEnd("saving as geojson")
 
-  timeEnd("DONE", immediate=False)
+  timeEnd("get meanlines")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)

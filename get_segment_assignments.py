@@ -27,7 +27,7 @@ def get_segment_assignments(segments_file, meanlines_file, out_file):
   from lib.segment_assignment import assign_segments_to_meanlines
   from lib.segment_assignment import save_assignments_as_json
 
-  timeStart("DONE", immediate=False)
+  timeStart("get segment assignments")
   segments = get_features(segments_file)
   meanlines = get_features(meanlines_file)
   
@@ -36,7 +36,7 @@ def get_segment_assignments(segments_file, meanlines_file, out_file):
   timeEnd("assign segments to meanlines")
   
   save_assignments_as_json(assignments, out_file)
-  timeEnd("DONE", immediate=False)
+  timeEnd("get segment assignments")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)

@@ -26,7 +26,7 @@ def get_segments(in_file, out_file, intersections_file):
   from lib.segment_detection import get_segments
   from lib.segment_detection import save_segments_as_geojson
 
-  timeStart("DONE", immediate=False)
+  timeStart("get segments")
 
   timeStart("read image")
   image = get_image(in_file)
@@ -34,12 +34,12 @@ def get_segments(in_file, out_file, intersections_file):
 
   intersections = get_features(intersections_file)
 
-  timeStart("get segments")
+  timeStart("calculate segments")
   segments = get_segments(image, intersections)
-  timeEnd("get segments")
+  timeEnd("calculate segments")
         
   save_segments_as_geojson(segments, out_file)
-  timeEnd("DONE", immediate=False)
+  timeEnd("get segments")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)

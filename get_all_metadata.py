@@ -42,7 +42,7 @@ def get_all_metadata(in_file, out_dir, scale=1):
     "segment_assignments": out_dir+"/segment_assignments.json"
   }
 
-  timeStart("ALL DONE", immediate=False)
+  timeStart("GET ALL METADATA")
 
   print "\n--ROI--"
   get_roi(in_file, paths["roi"], scale)
@@ -58,7 +58,7 @@ def get_all_metadata(in_file, out_dir, scale=1):
   get_segment_assignments(paths["segments"], paths["meanlines"], paths["segment_assignments"])
 
   print "\n"
-  timeEnd("ALL DONE", immediate=False)
+  timeEnd("GET ALL METADATA")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
