@@ -60,7 +60,7 @@ def analyze_image(in_file, out_file, scale=1, debug_dir=False):
   
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")
-  background = dark_pixels | local_min(img_gray)    
+  background = dark_pixels | local_min(img_gray) | masked_image.mask
   ridges_h, ridges_v = find_ridges(img_dark_removed, background)
   ridges = ridges_h | ridges_v
   timeEnd("get horizontal and vertical ridges")
