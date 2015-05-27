@@ -3,37 +3,39 @@ from time import time
 
 timeDict = {}
 depth = 0
-nested = False
+justCalledTimeStart = False
 
-def timeStart(key, immediate=True):
-  global depth, nested
+def timeStart(key):
+  global depth, justCalledTimeStart
 
   timeDict[key] = time()
-  if immediate:
-    printStart(key, nested)
+  
+  printStart(key, justCalledTimeStart)
 
   depth += 1
-  nested = True
+  justCalledTimeStart = True
 
-def timeEnd(key, immediate=True):
-  global depth, nested
-
-  if not immediate:
-    printStart(key)
-  printEnd(key)
-  del timeDict[key]
+def timeEnd(key):
+  global depth, justCalledTimeStart
 
   depth -= 1
-  nested = False
+    
+  printEnd(key, justCalledTimeStart)
+  del timeDict[key]
 
-def printStart(key, nested):
-  indent = getIndent()
-  if (nested is True):
+  justCalledTimeStart = False
+
+def printStart(key, justCalledTimeStart):
+  if (justCalledTimeStart is True):
     sys.stdout.write("\n")
-  sys.stdout.write(indent+key+" ... ")
+
+  sys.stdout.write(getIndent() + key + " ... ")
   sys.stdout.flush()
 
-def printEnd(key):
+def printEnd(key, justCalledTimeStart):
+  if (justCalledTimeStart is False):
+    sys.stdout.write(getIndent())
+
   sys.stdout.write(str(time() - timeDict[key]) + "s \n")
 
 def getIndent():
