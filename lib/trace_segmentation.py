@@ -94,12 +94,26 @@ def img_seg_to_seg_objects(img_seg):
   segments : list of segments
     A list containing all the trace segments.
   '''
+
+  timeStart("get segment coordinates")
+  it = np.nditer(img_seg, flags=['multi_index'])
+  segment_coordinates = {}
+  while not it.finished:
+    label_num = str(it[0])
+    if (label_num not in segment_coordinates):
+      segment_coordinates[label_num] = []
+    
+    segment_coordinates[label_num].append(np.array(it.multi_index))
+    it.iternext()
+  timeEnd("get segment coordinates")
+
   dims = img_seg.shape
-  num_segments = np.amax(img_seg)
   segments = {}
-  for i in np.arange(1, num_segments + 1):
-    pixel_coords = np.argwhere(img_seg == i)
-    segments[i] = segment(pixel_coords, dims, ID=i)
+  timeStart("create segment objects")
+  for (label_num, pixel_coords) in segment_coordinates.iteritems():
+    segments[label_num] = segment(np.array(pixel_coords), dims, ID=label_num)
+  timeEnd("create segment objects")
+
   return segments
 
 def add_ridges_to_segments(ridges_h, ridges_v, segments):
