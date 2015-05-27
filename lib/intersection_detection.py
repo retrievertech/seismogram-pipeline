@@ -15,7 +15,6 @@ from scipy.signal import convolve2d
 
 from skimage.morphology import medial_axis
 from skimage import color
-from skimage.io import imsave
 from lib.draw import circle
 
 import geojson
@@ -40,7 +39,7 @@ class IntersectionCollection:
     self.radii = radii
     self.shape = shape
 
-  def exportAsGeoJSON(self, filepath):
+  def asGeoJSON(self):
     '''
     Saves the collection of intersections to a file
     as a GeoJSON Feature Collection. Each intersection
@@ -51,11 +50,9 @@ class IntersectionCollection:
       newPoint = geojson.Point((int(coord[1]), int(coord[0])))
       newCircle = geojson.Feature(geometry = newPoint, properties = { "radius": radius })
       circles.append(newCircle)
-    out = geojson.FeatureCollection(circles)
-    with open(filepath, 'w') as outfile:
-      geojson.dump(out, outfile)
+    return geojson.FeatureCollection(circles)
   
-  def exportAsImage(self, filepath):
+  def asImage(self):
     '''
     Saves the collection of intersections to a file
     as a black and white image, where white pixels
@@ -69,8 +66,7 @@ class IntersectionCollection:
     expand_junctions(image_intersections, self.intersections, self.radii)
     timeEnd("expand junctions")
     
-    image_intersections = image_intersections.astype(float)
-    imsave(filepath, image_intersections)
+    return image_intersections
 
   # # The CSV output option will not work properly at the moment.
   # figure = True

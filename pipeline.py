@@ -29,9 +29,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   from lib.load_image import get_image
   from skimage.morphology import medial_axis
-
   from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, corners_to_geojson
   from lib.polygon_mask import mask_image
+  from lib.meanline_detection import detect_meanlines, meanlines_to_geojson
   from lib.threshold import flatten_background
   from lib.ridge_detection import find_ridges
   from lib.binarization import local_min, binary_image
@@ -40,6 +40,14 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.geojson_io import save_features
   from scipy import misc
 
+  paths = {
+    "roi": out_dir+"/roi.json",
+    "meanlines": out_dir+"/meanlines.json",
+    "intersections": out_dir+"/intersections.json",
+    "segments": out_dir+"/segments.json",
+    "segment_assignments": out_dir+"/segment_assignments.json"
+  }
+
   timeStart("get all metadata")
 
 
@@ -47,22 +55,51 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   img_gray = get_image(in_file)
   timeEnd("read image")
 
+
   print "\n--ROI--"
   timeStart("get region of interest")
   boundary = get_boundary(img_gray, scale=scale, debug_dir=debug_dir)
   lines = get_box_lines(boundary, debug_dir=debug_dir, image=img_gray)
   corners = get_roi_corners(lines, debug_dir=debug_dir, image=img_gray)
-  roi_polygon = corners_to_geojson(corners)["geometry"]["coordinates"][0]
-  masked_image = mask_image(img_gray, roi_polygon)
   timeEnd("get region of interest")
+
+  timeStart("convert roi to geojson")
+  corners_as_geojson = corners_to_geojson(corners)
+  timeEnd("convert roi to geojson")
+
+  timeStart("saving roi as geojson")
+  save_features(corners_as_geojson, paths["roi"])
+  timeEnd("saving roi as geojson")
+
+
+  print "\n--MASK IMAGE--"
+  roi_polygon = corners_as_geojson["geometry"]["coordinates"][0]
+
+  timeStart("mask image")
+  masked_image = mask_image(img_gray, roi_polygon)
+  timeEnd("mask image")
 
   if debug_dir:
     misc.imsave(debug_dir+"/masked_image.png", masked_image.filled(0))
+
+
+  print "\n--MEANLINES--"
+  meanlines = detect_meanlines(masked_image, scale=scale, debug_dir=debug_dir)
+
+  timeStart("convert meanlines to geojson")
+  meanlines_as_geojson = meanlines_to_geojson(meanlines)
+  timeEnd("convert meanlines to geojson")
+
+  timeStart("saving meanlines as geojson")
+  save_features(meanlines_as_geojson, paths["meanlines"])
+  timeEnd("saving meanlines as geojson")
+
 
   print "\n--FLATTEN BACKGROUND--"
   img_dark_removed, dark_pixels = flatten_background(masked_image, 0.95, 
                              return_background=True)
   
+
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")
   background = dark_pixels | local_min(img_gray) | masked_image.mask
@@ -70,23 +107,39 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   ridges = ridges_h | ridges_v
   timeEnd("get horizontal and vertical ridges")
   
+
   print "\n--THRESHOLDING--"
   timeStart("get binary image")
   img_bin = binary_image(img_dark_removed, markers_trace=ridges,
                markers_background=background)
   timeEnd("get binary image")
   
+
   print "\n--SKELETONIZE--"
   timeStart("get medial axis skeleton and distance transform")
   img_skel, dist = medial_axis(img_bin, return_distance=True)
   timeEnd("get medial axis skeleton and distance transform")
 
+
   print "\n--INTERSECTIONS--"
-  intersections = find_intersections(img_bin, img_skel, dist)
+  intersections = find_intersections(img_bin, img_skel, dist, figure=False)
+
+  timeStart("convert to geojson")
+  intersection_json = intersections.asGeoJSON()
+  timeEnd("convert to geojson")
   
+  timeStart("saving intersections as geojson")
+  save_features(intersection_json, paths["intersections"])
+  timeEnd("saving intersections as geojson")
+
+  timeStart("convert to image")
+  intersection_image = intersections.asImage()
+  timeEnd("convert to image")
+
+
   print "\n--SEGMENTS--"
   timeStart("get segments")
-  segments = get_segments(img_gray, img_bin, img_skel, dist, intersections,
+  segments = get_segments(img_gray, img_bin, img_skel, dist, intersection_image,
               ridges_h, ridges_v)
   timeEnd("get segments")
   
@@ -95,7 +148,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   timeEnd("convert segments to geojson")
   
   timeStart("saving segments as geojson")
-  save_features(segments_as_geojson, out_file)
+  save_features(segments_as_geojson, paths["segments"])
   timeEnd("saving segments as geojson")
 
   #return (img_gray, ridges, img_bin, intersections, img_seg)
