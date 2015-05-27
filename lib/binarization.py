@@ -39,11 +39,17 @@ def binary_image(image, markers_trace=None, markers_background=None,
     markers_background = get_background_markers(image)
   if markers_trace is None: 
     markers_trace = get_trace_markers(image, markers_background)
+
+  timeStart("watershed segmentation")
   image_bin = watershed_segmentation(image, markers_trace, 
                      markers_background)
+  timeEnd("watershed segmentation")
   #image_bin = image_bin & (~ fill_corners(canny(image)))
+
+  timeStart("remove small segments and edges")
   image_bin = remove_small_segments_and_edges(image_bin, min_trace_size, 
                         min_background_size)
+  timeEnd("remove small segments and edges")
   return image_bin
 
 def watershed_segmentation(image_gray, markers_trace, markers_background,

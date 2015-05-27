@@ -65,9 +65,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   print "found %s segments" % np.amax(image_segments)
 
-  timeStart("create segment objects")
   segments = img_seg_to_seg_objects(image_segments)
-  timeEnd("create segment objects")
 
   timeStart("add ridges to segments")
   add_ridges_to_segments(ridges_h, ridges_v, segments)
