@@ -40,6 +40,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.geojson_io import save_features
   from scipy import misc
 
+  timeStart("get all metadata")
+
+
   timeStart("read image")
   img_gray = get_image(in_file)
   timeEnd("read image")
@@ -102,6 +105,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   # connect segments
   
   # output data
+
+  timeEnd("get all metadata")
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
