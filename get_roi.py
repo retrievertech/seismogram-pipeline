@@ -4,7 +4,7 @@ Description:
   seismogram image.
 
 Usage:
-  get_roi.py --image <filename> --output <filename> [--scale <scale>] [--debug <directory>]
+  get_roi.py --image <filename> [--output <filename>] [--scale <scale>] [--debug <directory>]
   get_roi.py -h | --help
 
 Options:
@@ -42,9 +42,12 @@ def get_roi(in_file, out_file, scale=1, debug_dir=False):
   corners_as_geojson = corners_to_geojson(corners)
   timeEnd("convert to geojson")
 
-  timeStart("saving as geojson")
-  save_features(corners_as_geojson, out_file)
-  timeEnd("saving as geojson")
+  if out_file:
+    timeStart("saving as geojson")
+    save_features(corners_as_geojson, out_file)
+    timeEnd("saving as geojson")
+  else:
+    print corners_as_geojson
 
   timeEnd("ROI")
 
@@ -55,7 +58,7 @@ if __name__ == '__main__':
   scale = float(arguments["--scale"])
   debug_dir = arguments["--debug"]
 
-  if (in_file and out_file):
+  if (in_file):
     get_roi(in_file, out_file, scale, debug_dir)
   else:
     print(arguments)
