@@ -13,7 +13,7 @@ import skimage.draw as skidraw
 from skimage.color import gray2rgb
 
 from line_intersection import seg_intersect
-from hough_lines import get_hough_lines as do_hough
+from hough_lines import get_best_hough_lines
 from threshold_image import threshold_image
 
 import matplotlib.pyplot as plt
@@ -69,10 +69,7 @@ def get_boundary(grayscale_image, scale=1, debug_dir=False):
 def get_hough_lines(image, min_angle, max_angle):
   min_separation_distance = 5
   min_separation_angle = 5
-  return do_hough(image, min_angle, max_angle, min_separation_distance, min_separation_angle)
-
-def get_line_length(line):
-  return np.linalg.norm(np.subtract(line[1], line[0]))
+  return get_best_hough_lines(image, min_angle, max_angle, min_separation_distance, min_separation_angle)
 
 def get_box_lines(boundary, debug_dir = False, image = None):
   height, width = boundary.shape
@@ -96,28 +93,22 @@ def get_box_lines(boundary, debug_dir = False, image = None):
   }
   timeEnd("get hough lines")
 
-  timeStart("calculate line lengths")
-  line_lengths = { region: map(get_line_length, lines) for region, lines in hough_lines.iteritems() }
-  timeEnd("calculate line lengths")
+  hough_lines["bottom"] += [0, half_height]
+  hough_lines["right"] += [half_width, 0]
 
-  timeStart("select longest lines")
-  longest_lines = { region: hough_lines[region][np.argmax(lengths)] for region, lengths in line_lengths.iteritems() }
-  timeEnd("select longest lines")
-
-  # translate lines to account for working with halved image regions
-  longest_lines["bottom"] += [0, half_height]
-  longest_lines["right"] += [half_width, 0]
+  print "found these hough lines:"
+  print hough_lines
 
   if debug_dir:
-    image = gray2rgb(image)
-    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for name, line in longest_lines.iteritems() ]
+    image = gray2rgb(boundary)
+    line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for line in hough_lines.itervalues() ]
     for line in line_coords:
       rr, cc = line
       mask = (rr >= 0) & (rr < image.shape[0]) & (cc >= 0) & (cc < image.shape[1])
       image[rr[mask], cc[mask]] = [255, 0, 0]
-    misc.imsave(debug_dir+"/longest_hough_lines.png", image)
+    misc.imsave(debug_dir+"/hough_lines.png", image)
 
-  return longest_lines
+  return hough_lines
 
 def get_roi_corners(lines, debug_dir = False, image = None):
   timeStart("find intersections")
