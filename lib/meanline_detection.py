@@ -1,7 +1,7 @@
 from timer import timeStart, timeEnd
 
 from threshold_image import threshold_image
-from hough_lines import get_hough_lines
+from hough_lines import get_all_hough_lines
 from skimage.morphology import remove_small_objects
 from scipy import misc
 import numpy as np
@@ -29,7 +29,7 @@ def detect_meanlines(masked_image, scale=1, debug_dir=False):
     misc.imsave(debug_dir+"/filtered_image.png", filtered_image)
 
   timeStart("get hough lines")
-  lines = get_hough_lines(filtered_image, min_angle=-120, max_angle=-70, min_separation_distance=9 , min_separation_angle=25)
+  lines = get_all_hough_lines(filtered_image, min_angle=-120, max_angle=-70, min_separation_distance=9 , min_separation_angle=25)
   timeEnd("get hough lines")
 
   if debug_dir:
