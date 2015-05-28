@@ -2,7 +2,7 @@ import numpy as np
 from skimage.transform import hough_line, hough_line_peaks
 
 def get_hough_lines(image, min_angle, max_angle, min_separation_distance, min_separation_angle):
-  angles = np.deg2rad(np.arange(min_angle, max_angle, 1))
+  angles = np.deg2rad(np.arange(min_angle, max_angle, 0.25))
   hough, angles, distances = hough_line(image, angles)
   peak_hough, peak_angles, peak_distances = hough_line_peaks(hough, angles, distances, num_peaks = 150, threshold = 0.5*np.amax(hough), min_distance = min_separation_distance, min_angle = min_separation_angle)
 
