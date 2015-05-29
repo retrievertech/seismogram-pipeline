@@ -101,21 +101,23 @@ def img_seg_to_seg_objects(img_seg):
 
   timeStart("get segment coordinates")
   it = np.nditer(img_seg, flags=['multi_index'])
-  segment_coordinates = {}
+  segment_coordinates = [[] for i in xrange(np.amax(img_seg))]
   while not it.finished:
-    label_num = str(it[0])
-    if (label_num not in segment_coordinates):
-      segment_coordinates[label_num] = []
+    if it[0] == 0:
+      it.iternext()
+      continue
     
-    segment_coordinates[label_num].append(np.array(it.multi_index))
+    segment_idx = it[0] - 1
+    segment_coordinates[segment_idx].append(np.array(it.multi_index))
     it.iternext()
   timeEnd("get segment coordinates")
 
   dims = img_seg.shape
   segments = {}
   timeStart("create segment objects")
-  for (label_num, pixel_coords) in segment_coordinates.iteritems():
-    segments[label_num] = segment(np.array(pixel_coords), dims, ID=label_num)
+  for (segment_idx, pixel_coords) in enumerate(segment_coordinates):
+    segment_id = segment_idx + 1
+    segments[segment_id] = segment(np.array(pixel_coords), dims, ID=segment_id)
   timeEnd("create segment objects")
 
   return segments
