@@ -25,8 +25,12 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   image_canny = canny(img_gray)
   timeEnd("canny edge detection")
 
+  timeStart("fill corners")
+  filled_corners_canny = fill_corners(image_canny)
+  timeEnd("fill corners")
+
   timeStart("bitwise & and ~")
-  img_bin = img_bin & (~ fill_corners(image_canny))
+  img_bin = img_bin & (~ filled_corners_canny)
   timeEnd("bitwise & and ~")
   
   timeStart("sobel filter")
