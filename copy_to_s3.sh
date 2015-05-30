@@ -2,7 +2,7 @@
 
 # copies a directory to the s3 metadata bucket
 #
-#  sh copy_to_s3.sh <image_name> <path_to_metadata_dir> [dev]
+#  sh copy_to_s3.sh <image_name> <path_to_metadata_dir> <edited> [dev]
 #
 # if the third argument is "dev", the metadata is copied locally.
 # otherwise it's copied to the s3 bucket.
