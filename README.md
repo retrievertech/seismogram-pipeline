@@ -41,6 +41,10 @@ Arguments in `[square brackets]` are optional, whereas unbracketed arguments are
 `python get_all_metadata.py -h` or `--help` outputs a more detailed help message:
 
 ```
+Description:
+  Generate all metadata (ROI, meanlines, intersections, and segments as of 6/10/2015)
+  for a single seismogram.
+
 Usage:
   pipeline.py --image <filename> --output <directory> [--scale <scale>] [--debug <directory>]
   pipeline.py -h | --help

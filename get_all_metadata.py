@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Description:
+  Generate all metadata (ROI, meanlines, intersections, and segments as of 6/10/2015)
+  for a single seismogram.
 
 Usage:
   pipeline.py --image <filename> --output <directory> [--scale <scale>] [--debug <directory>]
