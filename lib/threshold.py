@@ -15,7 +15,7 @@ from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
   
 def threshold(a, threshold_function, num_blocks, block_dims = None, 
-        smoothing_factor = 0.003, *args):
+        smoothing = 0.003, debug_dir = None):
   '''
   Get a smoothly varing threshold from an image by applying the threshold 
   function to multiple randomly positioned blocks of the image and using
@@ -37,7 +37,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     than the dimensions of the image. If left unspecified, the blocks will
     be squares with area approximately equal to two times the area of the
     image, divided by num_blocks.
-  smoothing_factor : float, optional
+  smoothing : float, optional
     A parameter to adjust the smoothness of the 2-D smoothing spline. A
     higher number increases the smoothness of the output. An input of zero
     is equivalent to interpolation.
@@ -55,7 +55,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   else:
     spline_order = int(np.sqrt(num_blocks) - 1)
   if spline_order == 0:
-    return (np.ones_like(a) * threshold_function(a, *args))
+    return (np.ones_like(a) * threshold_function(a))
 
   if (type(a) is MaskedArray):
     mask = a.mask
@@ -77,9 +77,9 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   for p in points:
     block = get_block(a, p, block_dims)
     if (type(block) is MaskedArray):
-      threshold = threshold_function(block.compressed(), *args)
+      threshold = threshold_function(block.compressed())
     else:
-      threshold = threshold_function(block, *args)
+      threshold = threshold_function(block)
     th.append(threshold)
   th = np.asarray(th)
   timeEnd("calculate thresholds for blocks of size %s" % block_dim)
@@ -90,7 +90,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   fit = spline2d(points[:,0], points[:,1], th, 
            bbox = [0, a_dims[0], 0, a_dims[1]], 
            kx = spline_order, ky = spline_order,
-           s = num_blocks * smoothing_factor)
+           s = num_blocks * smoothing)
   th_new = fit(x = np.arange(a_dims[0]), y = np.arange(a_dims[1])) 
   th_new = fix_border(th_new, points)
   timeEnd("fit 2-D spline")
@@ -145,7 +145,7 @@ def fix_border(spline, sample_points):
                  return_indices = True)
   return spline[tuple(ind)]
 
-def get_background_thresh(a, prob_background = 1):
+def get_hist_and_background_count(a):
   '''
   Identifies a threshold for pixel intensity below which pixels are part of
   the background with at least a **prob_background** estimated probability. 
@@ -159,16 +159,12 @@ def get_background_thresh(a, prob_background = 1):
   a : 2-D numpy array
     The grayscale image. Can be either floats on the interval [0,1] or
     ints on the interval [0,255]. 
-  prob_background : float, optional
-    The minimum (estimated) probability that a pixel is part of the 
-    background. Must be <=1. Lower numbers will likely result in a higher
-    returned threshold.
   
   Returns 
   --------
-  th : float or int
-    The threshold below which pixels in the image are likely part of the
-    background. 
+  hist, bin_edges, background_count : 1-D numpy arrays
+    The histogram bin values and edges, and the expected distribution of values
+    for background (i.e. non-trace) pixels.
   '''
   if np.amax(a) <= 1:
     bins = np.linspace(0, 256/255, num = 257)
@@ -186,55 +182,78 @@ def get_background_thresh(a, prob_background = 1):
   background_count = np.zeros((256))
   background_count[0:(i + 1)] = hist[0:(i + 1)]
   background_count[(i + 1):(2 * i + 1)] = hist[(i - 1)::-1]
-  probabilities = np.minimum(background_count / hist, 0.99)
-  probabilities[0:(i + 1)] = 1
-  th = bin_edges[np.argmin(probabilities >= prob_background) - 1]
-  return th
+  return hist, bin_edges, background_count
 
-def foreground_intensity(a, prob_foreground = 0.99):
-  '''
-  Identifies a threshold for pixel intensity above which pixels are part of
-  the foreground with at least a **prob_background** estimated probability. 
-  This works by assuming that most of the image is dark background, the
-  single most common pixel brightness is the average brightness for a 
-  background pixel, and that the brightnesses of background pixels are 
-  distributed like the normal distribution. 
-  
-  Parameters
-  ------------
-  a : 2-D numpy array
-    The grayscale image. Can be either floats on the interval [0,1] or
-    ints on the interval [0,255]. 
-  prob_foreground : float, optional
-    The minimum (estimated) probability that a pixel is part of the 
-    background. Must be < 1. Lower numbers will likely result in a lower
-    returned threshold.
-  
-  Returns 
-  --------
-  th : float or int
-    The threshold above which pixels in the image are likely part of the
-    foreground. 
-  '''
-  if np.amax(a) <= 1:
-    bins = np.linspace(0, 256/255, num = 257)
-    a = np.round(255 * a) / 255
-  else:
-    bins = np.arange(257)
-  # Assume that data from 256,000 pixels is sufficient
-  if a.size > 256 * 1000:
-    prob = float(256 * 1000) / a.size        
-    a = a[(np.random.random(size = a.shape) < prob)]
-  hist, bin_edges = np.histogram(a, bins = bins)  
-  # Pad counts with 1 (to eliminate zeros)    
-  hist = hist + 1
-  i = np.argmax(hist)
-  background_count = np.zeros((256))
-  background_count[0:(i + 1)] = hist[0:(i + 1)]
-  background_count[(i + 1):(2 * i + 1)] = hist[(i - 1)::-1]
-  probabilities = 1 - np.minimum(background_count / hist, 1)
-  th = bin_edges[np.argmax(probabilities >= prob_foreground)]
-  return th
+
+def make_background_thresh_fun(prob_background = 1):
+
+  def get_background_thresh(a):
+    '''
+    Identifies a threshold for pixel intensity below which pixels are part of
+    the background with at least a **prob_background** estimated probability. 
+    This works by assuming that most of the image is dark background, the
+    single most common pixel brightness is the average brightness for a 
+    background pixel, and that the brightnesses of background pixels are 
+    distributed like the normal distribution. 
+    
+    Parameters
+    ------------
+    a : 2-D numpy array
+      The grayscale image. Can be either floats on the interval [0,1] or
+      ints on the interval [0,255]. 
+    prob_background : float, optional
+      The minimum (estimated) probability that a pixel is part of the 
+      background. Must be <=1. Lower numbers will likely result in a higher
+      returned threshold.
+    
+    Returns 
+    --------
+    th : float or int
+      The threshold below which pixels in the image are likely part of the
+      background. 
+    '''
+    hist, bin_edges, background_count = get_hist_and_background_count(a)
+    probabilities = np.minimum(background_count / hist, 0.99)
+    i = np.argmax(hist)
+    probabilities[0:(i + 1)] = 1
+    th = bin_edges[np.argmin(probabilities >= prob_background) - 1]
+    return th
+
+  return get_background_thresh
+
+def make_foreground_thresh_fun(prob_foreground = 0.99):
+
+  def get_foreground_thresh(a):
+    '''
+    Identifies a threshold for pixel intensity above which pixels are part of
+    the foreground with at least a **prob_background** estimated probability. 
+    This works by assuming that most of the image is dark background, the
+    single most common pixel brightness is the average brightness for a 
+    background pixel, and that the brightnesses of background pixels are 
+    distributed like the normal distribution. 
+    
+    Parameters
+    ------------
+    a : 2-D numpy array
+      The grayscale image. Can be either floats on the interval [0,1] or
+      ints on the interval [0,255]. 
+    prob_foreground : float, optional
+      The minimum (estimated) probability that a pixel is part of the 
+      background. Must be < 1. Lower numbers will likely result in a lower
+      returned threshold.
+    
+    Returns 
+    --------
+    th : float or int
+      The threshold above which pixels in the image are likely part of the
+      foreground. 
+    '''
+    hist, bin_edges, background_count = get_hist_and_background_count(a)
+    probabilities = 1 - np.minimum(background_count / hist, 1)
+    th = bin_edges[np.argmax(probabilities >= prob_foreground)]
+    return th
+
+  return get_foreground_thresh
 
 def background_threshold(img, prob_background = 1, num_blocks = None, 
              block_dims = None):
@@ -269,9 +288,11 @@ def background_threshold(img, prob_background = 1, num_blocks = None,
   # Default number of blocks assumes 500x500 blocks are a good size
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
-  th = threshold(img, get_background_thresh, num_blocks, block_dims, 0.003, 
-           prob_background)
-  return th
+
+  get_background_thresh = make_background_thresh_fun(prob_background)
+  
+  return threshold(img, get_background_thresh, num_blocks, block_dims,
+                   smoothing=0.003)
   
 def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None, 
              block_dims = None):
@@ -306,9 +327,11 @@ def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None,
   # Default number of blocks assumes 500x500 blocks are a good size
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
-  th = threshold(img, foreground_intensity, num_blocks, block_dims, 0.003, 
-           prob_foreground)
-  return th
+  
+  get_foreground_thresh = make_foreground_thresh_fun(prob_foreground)
+  
+  return threshold(img, get_foreground_thresh, num_blocks, block_dims,
+                   smoothing=0.003)
 
 def flatten_background(img, prob_background = 1, num_blocks = None, 
              block_dims = None, return_background = False):
@@ -349,8 +372,9 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
     num_blocks = int(np.ceil(2 * img.size / 250000))
 
   timeStart("calculate background threshold with %s blocks" % num_blocks)
+  get_background_thresh = make_background_thresh_fun(prob_background)
   background_level = threshold(img, get_background_thresh, num_blocks, 
-                 block_dims, 0.003, prob_background)
+                               block_dims, smoothing=0.003, debug_dir=debug_dir)
   timeEnd("calculate background threshold with %s blocks" % num_blocks)
 
   timeStart("select background pixels")
