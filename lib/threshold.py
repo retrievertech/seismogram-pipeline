@@ -72,6 +72,43 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   points = best_candidate_sample(candidate_coords, num_blocks)
   timeEnd("select block centers")
   
+  if (debug_dir):
+    from skimage.draw import line, circle
+    from skimage.color import gray2rgb
+    from scipy import misc
+    debug_image = gray2rgb(np.copy(a))
+    
+    def get_block_corners(center, size):
+      half_side = size/2
+      return [
+        (center[0]+half_side, center[1]+half_side),
+        (center[0]+half_side, center[1]-half_side),
+        (center[0]-half_side, center[1]-half_side),
+        (center[0]-half_side, center[1]+half_side)
+      ]
+
+    block_corners = [ get_block_corners(center, block_dim) for center in points ]
+    block_line_coords = [
+      [
+        line(*corners[0]+corners[1]),
+        line(*corners[1]+corners[2]),
+        line(*corners[2]+corners[3]),
+        line(*corners[3]+corners[0])
+      ] for corners in block_corners
+    ]
+    
+    for block in block_line_coords:
+      for line_coords in block:
+        rr, cc = line_coords
+        mask = (rr >= 0) & (rr < debug_image.shape[0]) & (cc >= 0) & (cc < debug_image.shape[1])
+        debug_image[rr[mask], cc[mask]] = [1.0, 0, 0]
+
+    for center in points:
+      rr, cc = circle(center[0], center[1], 20)
+      debug_image[rr, cc] = [1.0, 0, 0]
+
+    misc.imsave(debug_dir+"/threshold_blocks.png", debug_image)
+
   timeStart("calculate thresholds for blocks of size %s" % block_dim)
   th = []
   for p in points:
@@ -334,7 +371,7 @@ def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None,
                    smoothing=0.003)
 
 def flatten_background(img, prob_background = 1, num_blocks = None, 
-             block_dims = None, return_background = False):
+             block_dims = None, return_background = False, debug_dir = None):
   '''
   Finds the pixel intensity at every location in the image below which the 
   pixel is likely part of the dark background. Pixels darker than this 
