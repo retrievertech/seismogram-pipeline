@@ -85,12 +85,13 @@ class region:
     self.create_binary()
   
   def calc_properties(self):
+    # calculate domain, range, upper-left corner,
+    # centroid, width, height, and size (i.e. number of pixels in region)
     self.region_domain[0] = np.amin(self.jj)
     self.region_domain[1] = np.amax(self.jj)
     self.region_range[0] = np.amin(self.ii)
     self.region_range[1] = np.amax(self.ii)
-    self.ul_corner = np.array([self.region_range[0], 
-                   self.region_domain[0]], dtype=int)
+    self.ul_corner = np.array([self.region_range[0], self.region_domain[0]], dtype=int)
     self.centroid = np.mean(self.coords, axis=0)
     self.size = self.coords.shape[0]
     self.height = self.region_range[1] - self.region_range[0] + 1
@@ -114,10 +115,13 @@ class region:
     self.calc_properties()
   
   def create_binary(self):
-    ii_bin = self.ii - self.ul_corner[0]
-    jj_bin = self.jj - self.ul_corner[1] 
+    # create two boolean arrays, one representing the region itself,
+    # the other representing everything else in the bounding box that
+    # contains the region
+    ii_offset = self.ii - self.ul_corner[0]
+    jj_offset = self.jj - self.ul_corner[1] 
     self.binary = np.zeros((self.height, self.width), dtype=bool)
-    self.binary[ii_bin,jj_bin] = True
+    self.binary[ii_offset, jj_offset] = True
     self.mask = (~self.binary)
   
   def binary_image(self):

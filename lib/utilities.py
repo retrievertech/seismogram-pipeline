@@ -8,7 +8,7 @@ Created on Tue Feb 17 11:54:50 2015
 import numpy as np
 from skimage.draw import circle
 from scipy.stats import percentileofscore
-from threshold import *
+from threshold import get_background_thresh
 
 def normalize(a):
   '''
@@ -44,7 +44,7 @@ def noise_boundaries(a, perc_back):
 
 def gray_to_photon_count(image_gray, B_max = 1.01, B_min = 0):
   if B_min == 0:
-    B_min = background_intensity(image_gray)
+    B_min = get_background_thresh(image_gray)
   image_gray = np.maximum(image_gray, B_min)
   image_photons = np.log(B_max - B_min) - np.log(B_max - image_gray)
   image_photons = normalize(image_photons)

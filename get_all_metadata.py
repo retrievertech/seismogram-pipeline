@@ -98,8 +98,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
 
   print "\n--FLATTEN BACKGROUND--"
-  img_dark_removed, dark_pixels = flatten_background(masked_image, 0.95, 
-                             return_background=True)
+  img_dark_removed, dark_pixels = \
+    flatten_background(masked_image, prob_background=0.95, return_background=True)
   
 
   print "\n--RIDGES--"

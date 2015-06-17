@@ -40,7 +40,9 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   smoothing_factor : float, optional
     A parameter to adjust the smoothness of the 2-D smoothing spline. A
     higher number increases the smoothness of the output. An input of zero
-    is equivalent to interpolation. 
+    is equivalent to interpolation.
+  *args : float, optional
+    All other args are passed along to threshold_function
   
   Returns
   ---------
@@ -66,11 +68,11 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     block_dim = int(round(np.sqrt(2 * a.size / num_blocks)))
     block_dims = (block_dim, block_dim)
 
-  timeStart("select block coordinates")
+  timeStart("select block centers")
   points = best_candidate_sample(candidate_coords, num_blocks)
-  timeEnd("select block coordinates")
+  timeEnd("select block centers")
   
-  timeStart("calculate thresholds")
+  timeStart("calculate thresholds for blocks of size %s" % block_dim)
   th = []
   for p in points:
     block = get_block(a, p, block_dims)
@@ -80,7 +82,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
       threshold = threshold_function(block, *args)
     th.append(threshold)
   th = np.asarray(th)
-  timeEnd("calculate thresholds")
+  timeEnd("calculate thresholds for blocks of size %s" % block_dim)
 
   timeStart("fit 2-D spline")
   # Maybe consider using lower-order spline for large images 
@@ -143,7 +145,7 @@ def fix_border(spline, sample_points):
                  return_indices = True)
   return spline[tuple(ind)]
 
-def background_intensity(a, prob_background = 1):
+def get_background_thresh(a, prob_background = 1):
   '''
   Identifies a threshold for pixel intensity below which pixels are part of
   the background with at least a **prob_background** estimated probability. 
@@ -267,7 +269,7 @@ def background_threshold(img, prob_background = 1, num_blocks = None,
   # Default number of blocks assumes 500x500 blocks are a good size
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
-  th = threshold(img, background_intensity, num_blocks, block_dims, 0.003, 
+  th = threshold(img, get_background_thresh, num_blocks, block_dims, 0.003, 
            prob_background)
   return th
   
@@ -346,10 +348,10 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
   if num_blocks is None:
     num_blocks = int(np.ceil(2 * img.size / 250000))
 
-  timeStart("calculate background threshold")
-  background_level = threshold(img, background_intensity, num_blocks, 
+  timeStart("calculate background threshold with %s blocks" % num_blocks)
+  background_level = threshold(img, get_background_thresh, num_blocks, 
                  block_dims, 0.003, prob_background)
-  timeEnd("calculate background threshold")
+  timeEnd("calculate background threshold with %s blocks" % num_blocks)
 
   timeStart("select background pixels")
   background = img < background_level
