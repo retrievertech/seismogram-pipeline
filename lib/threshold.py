@@ -71,43 +71,6 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   timeStart("select block centers")
   points = best_candidate_sample(candidate_coords, num_blocks)
   timeEnd("select block centers")
-  
-  if (debug_dir):
-    from skimage.draw import line, circle
-    from skimage.color import gray2rgb
-    from scipy import misc
-    debug_image = gray2rgb(np.copy(a))
-    
-    def get_block_corners(center, size):
-      half_side = size/2
-      return [
-        (center[0]+half_side, center[1]+half_side),
-        (center[0]+half_side, center[1]-half_side),
-        (center[0]-half_side, center[1]-half_side),
-        (center[0]-half_side, center[1]+half_side)
-      ]
-
-    block_corners = [ get_block_corners(center, block_dim) for center in points ]
-    block_line_coords = [
-      [
-        line(*corners[0]+corners[1]),
-        line(*corners[1]+corners[2]),
-        line(*corners[2]+corners[3]),
-        line(*corners[3]+corners[0])
-      ] for corners in block_corners
-    ]
-    
-    for block in block_line_coords:
-      for line_coords in block:
-        rr, cc = line_coords
-        mask = (rr >= 0) & (rr < debug_image.shape[0]) & (cc >= 0) & (cc < debug_image.shape[1])
-        debug_image[rr[mask], cc[mask]] = [1.0, 0, 0]
-
-    for center in points:
-      rr, cc = circle(center[0], center[1], 20)
-      debug_image[rr, cc] = [1.0, 0, 0]
-
-    misc.imsave(debug_dir+"/threshold_blocks.png", debug_image)
 
   timeStart("calculate thresholds for blocks of size %s" % block_dim)
   th = []
@@ -132,7 +95,61 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   th_new = fix_border(th_new, points)
   timeEnd("fit 2-D spline")
   return th_new
+
+def debug_blocks(a, points, block_dims, threshold_function, debug_dir):
+  from scipy import misc
+  from skimage.draw import line, circle
+  from skimage.color import gray2rgb
+
+  bad_block_points = []
   
+  for p in points:
+    block = get_block(a, p, block_dims)
+    try:
+      if (type(block) is MaskedArray):
+        threshold_function(block.compressed())
+      else:
+        threshold_function(block)
+
+    except Exception, e:
+      print "threshold block error"
+      print e
+      bad_block_points.append(p)
+      misc.imsave(debug_dir+"/bad_block_"+str(p)+".png", block)
+
+  debug_image = gray2rgb(np.copy(a))
+  
+  def get_block_corners(center, size):
+    half_side = size/2
+    return [
+      (center[0]+half_side, center[1]+half_side),
+      (center[0]+half_side, center[1]-half_side),
+      (center[0]-half_side, center[1]-half_side),
+      (center[0]-half_side, center[1]+half_side)
+    ]
+
+  block_corners = [ get_block_corners(center, block_dims[0]) for center in bad_block_points ]
+  block_line_coords = [
+    [
+      line(*corners[0]+corners[1]),
+      line(*corners[1]+corners[2]),
+      line(*corners[2]+corners[3]),
+      line(*corners[3]+corners[0])
+    ] for corners in block_corners
+  ]
+  
+  for block in block_line_coords:
+    for line_coords in block:
+      rr, cc = line_coords
+      mask = (rr >= 0) & (rr < debug_image.shape[0]) & (cc >= 0) & (cc < debug_image.shape[1])
+      debug_image[rr[mask], cc[mask]] = [1.0, 0, 0]
+
+  for center in points:
+    rr, cc = circle(center[0], center[1], 20)
+    debug_image[rr, cc] = [1.0, 0, 0]
+
+  misc.imsave(debug_dir+"/threshold_blocks.png", debug_image)
+
 def get_block(a, center, block_dims):
   '''
   Returns the rectangular subarray of **a** centered at **center**, with
