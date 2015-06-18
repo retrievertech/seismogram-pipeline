@@ -212,13 +212,23 @@ def get_hist_and_background_count(a):
   if a.size > 256 * 1000:
     prob = float(256 * 1000) / a.size        
     a = a[(np.random.random(size = a.shape) < prob)]
-  hist, bin_edges = np.histogram(a, bins = bins)  
+  hist, bin_edges = np.histogram(a, bins = bins)
   # Pad counts with 1 (to eliminate zeros)    
   hist = hist + 1
-  i = np.argmax(hist)
+
+  # Assume the most common pixel value < 128 is the peak
+  # of the background pixel distribution
+  peak_pixel_color = np.argmax(hist[0:128])
+  
+  # Copy the histogram values from 0 -> peak into background_count
   background_count = np.zeros((256))
-  background_count[0:(i + 1)] = hist[0:(i + 1)]
-  background_count[(i + 1):(2 * i + 1)] = hist[(i - 1)::-1]
+  background_count[0:(peak_pixel_color + 1)] = hist[0:(peak_pixel_color + 1)]
+
+  # Reflect the histogram values from 0 -> peak and copy them
+  # into background_count[peak -> end]; this assumes the distribution
+  # of background pixel values is symmetrical about its peak
+  background_count[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = hist[(peak_pixel_color - 1)::-1]
+  
   return hist, bin_edges, background_count
 
 
