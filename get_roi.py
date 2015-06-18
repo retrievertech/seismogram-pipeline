@@ -42,6 +42,15 @@ def get_roi(in_file, out_file, scale=1, debug_dir=False):
   corners_as_geojson = corners_to_geojson(corners)
   timeEnd("convert to geojson")
 
+  if debug_dir:
+    from lib.polygon_mask import mask_image
+    from scipy import misc
+    roi_polygon = corners_as_geojson["geometry"]["coordinates"][0]
+    timeStart("mask image")
+    masked_image = mask_image(image, roi_polygon)
+    timeEnd("mask image")
+    misc.imsave(debug_dir+"/masked_image.png", masked_image.filled(0))
+
   if out_file:
     timeStart("saving as geojson")
     save_features(corners_as_geojson, out_file)
