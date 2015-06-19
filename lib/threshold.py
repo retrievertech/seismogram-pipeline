@@ -233,9 +233,7 @@ def get_hist_and_background_count(a):
   # Pad counts with 1 (to eliminate zeros)    
   hist = hist + 1
 
-  # Assume the most common pixel value < 128 is the peak
-  # of the background pixel distribution
-  peak_pixel_color = np.argmax(hist[0:128])
+  peak_pixel_color = get_most_common_background_pixel_color(hist)
   
   # Copy the histogram values from 0 -> peak into background_count
   background_count = np.zeros((256))
@@ -248,6 +246,10 @@ def get_hist_and_background_count(a):
   
   return hist, bin_edges, background_count
 
+def get_most_common_background_pixel_color(hist):
+  # Assume the most common pixel value < 128 is the peak
+  # of the background pixel distribution
+  return np.argmax(hist[0:128])
 
 def make_background_thresh_fun(prob_background = 1):
 
@@ -278,7 +280,7 @@ def make_background_thresh_fun(prob_background = 1):
     '''
     hist, bin_edges, background_count = get_hist_and_background_count(a)
     probabilities = np.minimum(background_count / hist, 0.99)
-    peak_pixel_color = np.argmax(hist[0:128])
+    peak_pixel_color = get_most_common_background_pixel_color(hist)
     probabilities[0:(peak_pixel_color + 1)] = 1
     th = bin_edges[np.argmin(probabilities >= prob_background) - 1]
     return th
