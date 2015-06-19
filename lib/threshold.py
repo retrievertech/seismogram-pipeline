@@ -14,8 +14,8 @@ from skimage.morphology import (convex_hull_image)
 from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
   
-def threshold(a, threshold_function, num_blocks, block_dims = None, 
-        smoothing = 0.003, debug_dir = None):
+def threshold(img, threshold_function, num_blocks, block_dims = None, 
+        smoothing = 0.003):
   '''
   Get a smoothly varing threshold from an image by applying the threshold 
   function to multiple randomly positioned blocks of the image and using
@@ -23,7 +23,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   
   Parameters 
   ------------
-  a : 2-D numpy array
+  img : 2-D numpy array
     The grayscale image.
   threshold_function : a function
     The threshold function should take a grayscale image as an input and 
@@ -41,31 +41,29 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
     A parameter to adjust the smoothness of the 2-D smoothing spline. A
     higher number increases the smoothness of the output. An input of zero
     is equivalent to interpolation.
-  *args : float, optional
-    All other args are passed along to threshold_function
   
   Returns
   ---------
   th_new : 2-D numpy array
     The threshold. The array is the same shape as the original input image.
   '''
-  a_dims = a.shape
+  img_dims = img.shape
   if num_blocks >= 16:
     spline_order = 3
   else:
     spline_order = int(np.sqrt(num_blocks) - 1)
   if spline_order == 0:
-    return (np.ones_like(a) * threshold_function(a))
+    return (np.ones_like(img) * threshold_function(img))
 
-  if (type(a) is MaskedArray):
-    mask = a.mask
+  if (type(img) is MaskedArray):
+    mask = img.mask
   else:
-    mask = np.zeros(a_dims, dtype=bool)
+    mask = np.zeros(img_dims, dtype=bool)
 
   candidate_coords = np.transpose(np.nonzero(~mask))
   
   if block_dims is None:
-    block_dim = int(round(np.sqrt(2 * a.size / num_blocks)))
+    block_dim = int(round(np.sqrt(2 * img.size / num_blocks)))
     block_dims = (block_dim, block_dim)
 
   timeStart("select block centers")
@@ -75,7 +73,7 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   timeStart("calculate thresholds for blocks of size %s" % block_dim)
   th = []
   for p in points:
-    block = get_block(a, p, block_dims)
+    block = get_block(img, p, block_dims)
     if (type(block) is MaskedArray):
       threshold = threshold_function(block.compressed())
     else:
@@ -88,15 +86,15 @@ def threshold(a, threshold_function, num_blocks, block_dims = None,
   # Maybe consider using lower-order spline for large images 
   # (if large indices create problems for cubic functions)
   fit = spline2d(points[:,0], points[:,1], th, 
-           bbox = [0, a_dims[0], 0, a_dims[1]], 
+           bbox = [0, img_dims[0], 0, img_dims[1]], 
            kx = spline_order, ky = spline_order,
            s = num_blocks * smoothing)
-  th_new = fit(x = np.arange(a_dims[0]), y = np.arange(a_dims[1])) 
+  th_new = fit(x = np.arange(img_dims[0]), y = np.arange(img_dims[1])) 
   th_new = fix_border(th_new, points)
   timeEnd("fit 2-D spline")
   return th_new
 
-def debug_blocks(a, points, block_dims, threshold_function, debug_dir):
+def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
   from scipy import misc
   from skimage.draw import line, circle
   from skimage.color import gray2rgb
@@ -104,7 +102,7 @@ def debug_blocks(a, points, block_dims, threshold_function, debug_dir):
   bad_block_points = []
   
   for p in points:
-    block = get_block(a, p, block_dims)
+    block = get_block(img, p, block_dims)
     try:
       if (type(block) is MaskedArray):
         threshold_function(block.compressed())
@@ -117,7 +115,7 @@ def debug_blocks(a, points, block_dims, threshold_function, debug_dir):
       bad_block_points.append(p)
       misc.imsave(debug_dir+"/bad_block_"+str(p)+".png", block)
 
-  debug_image = gray2rgb(np.copy(a))
+  debug_image = gray2rgb(np.copy(img))
   
   def get_block_corners(center, size):
     half_side = size/2
@@ -150,42 +148,42 @@ def debug_blocks(a, points, block_dims, threshold_function, debug_dir):
 
   misc.imsave(debug_dir+"/threshold_blocks.png", debug_image)
 
-def get_block(a, center, block_dims):
+def get_block(img, center, block_dims):
   '''
-  Returns the rectangular subarray of **a** centered at **center**, with
+  Returns the rectangular subarray of **img** centered at **center**, with
   dimensions at most equal to **block_dims**. 
   
   Parameters 
   -----------
-  a : 2-D numpy array
+  img : 2-D numpy array
   center : tuple or numpy array
     The coordinates of the center of the block. Should be integer-valued. 
   block_dims : tuple or numpy array
     The dimensions of the block. If **center** is too close to the edge of
-    **a**, the returned block will have dimensions smaller than 
+    **img**, the returned block will have dimensions smaller than 
     **block_dims**.
     
   Results
   ---------
   block : 2-D numpy array
-    A subarray of **a**.
+    A subarray of **img**.
   '''
-  a_dims = a.shape    
+  img_dims = img.shape    
   upper = max(0, center[0] - block_dims[0] / 2)
-  lower = min(a_dims[0], center[0] + block_dims[0] / 2 + 1)
+  lower = min(img_dims[0], center[0] + block_dims[0] / 2 + 1)
   left = max(0, center[1] - block_dims[1] / 2)
-  right = min(a_dims[1], center[1] + block_dims[1] / 2 + 1)
-  block = a[upper:lower, left:right]
+  right = min(img_dims[1], center[1] + block_dims[1] / 2 + 1)
+  block = img[upper:lower, left:right]
   return block
 
-def get_convex_hull(points, a_dims):
+def get_convex_hull(points, img_dims):
   '''
   Given an array containing the coordinates of points in a 2-D array, outputs 
   the convex hull of those points.
   '''
-  a = np.zeros(a_dims, dtype = bool)
-  a[points[:,0], points[:,1]] = True
-  return convex_hull_image(a)
+  img = np.zeros(img_dims, dtype = bool)
+  img[points[:,0], points[:,1]] = True
+  return convex_hull_image(img)
 
 def fix_border(spline, sample_points):
   '''
@@ -441,7 +439,7 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
   timeStart("calculate background threshold with %s blocks" % num_blocks)
   get_background_thresh = make_background_thresh_fun(prob_background)
   background_level = threshold(img, get_background_thresh, num_blocks, 
-                               block_dims, smoothing=0.003, debug_dir=debug_dir)
+                               block_dims, smoothing=0.003)
   timeEnd("calculate background threshold with %s blocks" % num_blocks)
 
   timeStart("select background pixels")
