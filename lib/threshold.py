@@ -278,8 +278,8 @@ def make_background_thresh_fun(prob_background = 1):
     '''
     hist, bin_edges, background_count = get_hist_and_background_count(a)
     probabilities = np.minimum(background_count / hist, 0.99)
-    i = np.argmax(hist)
-    probabilities[0:(i + 1)] = 1
+    peak_pixel_color = np.argmax(hist[0:128])
+    probabilities[0:(peak_pixel_color + 1)] = 1
     th = bin_edges[np.argmin(probabilities >= prob_background) - 1]
     return th
 
