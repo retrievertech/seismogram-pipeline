@@ -199,18 +199,14 @@ def fix_border(spline, sample_points):
                  return_indices = True)
   return spline[tuple(ind)]
 
-def get_hist_and_background_count(a):
+def get_hist_and_background_count(img):
   '''
-  Identifies a threshold for pixel intensity below which pixels are part of
-  the background with at least a **prob_background** estimated probability. 
-  This works by assuming that most of the image is dark background, the
-  single most common pixel brightness is the average brightness for a 
-  background pixel, and that the brightnesses of background pixels are 
-  distributed like the normal distribution. 
+  Returns a histogram of all pixel values for a grayscale image. Also
+  returns the expected histogram of background pixel values.
   
   Parameters
   ------------
-  a : 2-D numpy array
+  img : 2-D numpy array
     The grayscale image. Can be either floats on the interval [0,1] or
     ints on the interval [0,255]. 
   
@@ -220,36 +216,41 @@ def get_hist_and_background_count(a):
     The histogram bin values and edges, and the expected distribution of values
     for background (i.e. non-trace) pixels.
   '''
-  if np.amax(a) <= 1:
+  if np.amax(img) <= 1:
     bins = np.linspace(0, 256/255, num = 257)
-    a = np.round(255 * a) / 255
+    img = np.round(255 * img) / 255
   else:
     bins = np.arange(257)
-  # Assume that data from 256,000 pixels is sufficient
-  if a.size > 256 * 1000:
-    prob = float(256 * 1000) / a.size        
-    a = a[(np.random.random(size = a.shape) < prob)]
-  hist, bin_edges = np.histogram(a, bins = bins)
-  # Pad counts with 1 (to eliminate zeros)    
-  hist = hist + 1
-
-  peak_pixel_color = get_most_common_background_pixel_color(hist)
   
-  # Copy the histogram values from 0 -> peak into background_count
-  background_count = np.zeros((256))
-  background_count[0:(peak_pixel_color + 1)] = hist[0:(peak_pixel_color + 1)]
+  # Assume that data from 256,000 pixels is sufficient
+  if img.size > 256 * 1000:
+    prob = float(256 * 1000) / img.size        
+    img = img[(np.random.random(size = img.shape) < prob)]
+  hist_counts, bin_edges = np.histogram(img, bins = bins)
+  
+  # Pad counts with 1 (to eliminate zeros)    
+  hist_counts = hist_counts + 1
+
+  expected_background_counts = get_expected_background_pixel_counts(hist_counts)
+  
+  return hist_counts, bin_edges, expected_background_counts
+
+def get_expected_background_pixel_counts(pixel_counts):
+  peak_pixel_color = get_most_common_background_pixel_color(pixel_counts)
+  
+  # Copy the histogram values from 0 -> peak into expected_background_counts
+  expected_background_counts = np.zeros((256))
+  expected_background_counts[0:(peak_pixel_color + 1)] = pixel_counts[0:(peak_pixel_color + 1)]
 
   # Reflect the histogram values from 0 -> peak and copy them
-  # into background_count[peak -> end]; this assumes the distribution
+  # into expected_background_counts[peak -> end]; this assumes the distribution
   # of background pixel values is symmetrical about its peak
-  background_count[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = hist[(peak_pixel_color - 1)::-1]
-  
-  return hist, bin_edges, background_count
+  expected_background_counts[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = pixel_counts[(peak_pixel_color - 1)::-1]
 
-def get_most_common_background_pixel_color(hist):
+def get_most_common_background_pixel_color(pixel_counts):
   # Assume the most common pixel value < 128 is the peak
   # of the background pixel distribution
-  return np.argmax(hist[0:128])
+  return np.argmax(pixel_counts[0:128])
 
 def make_background_thresh_fun(prob_background = 1):
 
