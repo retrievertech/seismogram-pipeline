@@ -245,6 +245,8 @@ def get_expected_background_pixel_counts(pixel_counts):
   # of background pixel values is symmetrical about its peak
   expected_background_counts[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = pixel_counts[(peak_pixel_color - 1)::-1]
 
+  return expected_background_counts
+
 def get_most_common_background_pixel_color(pixel_counts):
   # Assume the most common pixel value < 128 is the peak
   # of the background pixel distribution
