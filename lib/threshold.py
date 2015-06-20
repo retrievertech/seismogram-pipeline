@@ -100,8 +100,8 @@ def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
 
   bad_block_points = []
   
-  for p in points:
-    block = get_block(img, p, block_dims)
+  for center in points:
+    block = get_block(img, center, block_dims)
     try:
       if (type(block) is MaskedArray):
         threshold_function(block.compressed())
@@ -111,8 +111,8 @@ def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
     except Exception, e:
       print "threshold block error"
       print e
-      bad_block_points.append(p)
-      misc.imsave(debug_dir+"/bad_block_"+str(p)+".png", block)
+      bad_block_points.append(center)
+      misc.imsave(debug_dir+"/bad_block_"+str(center)+".png", block)
 
   debug_image = gray2rgb(np.copy(img))
   
@@ -253,7 +253,7 @@ def get_most_common_background_pixel_color(pixel_counts):
 
 def make_background_thresh_fun(prob_background = 1):
 
-  def get_background_thresh(a):
+  def get_background_thresh(img):
     '''
     Identifies a threshold for pixel intensity below which pixels are part of
     the background with at least a **prob_background** estimated probability. 
@@ -264,7 +264,7 @@ def make_background_thresh_fun(prob_background = 1):
     
     Parameters
     ------------
-    a : 2-D numpy array
+    img : 2-D numpy array
       The grayscale image. Can be either floats on the interval [0,1] or
       ints on the interval [0,255]. 
     prob_background : float, optional
@@ -278,7 +278,7 @@ def make_background_thresh_fun(prob_background = 1):
       The threshold below which pixels in the image are likely part of the
       background. 
     '''
-    hist, bin_edges, background_count = get_hist_and_background_count(a)
+    hist, bin_edges, background_count = get_hist_and_background_count(img)
     probabilities = np.minimum(background_count / hist, 0.99)
     peak_pixel_color = get_most_common_background_pixel_color(hist)
     probabilities[0:(peak_pixel_color + 1)] = 1
@@ -289,7 +289,7 @@ def make_background_thresh_fun(prob_background = 1):
 
 def make_foreground_thresh_fun(prob_foreground = 0.99):
 
-  def get_foreground_thresh(a):
+  def get_foreground_thresh(img):
     '''
     Identifies a threshold for pixel intensity above which pixels are part of
     the foreground with at least a **prob_background** estimated probability. 
@@ -300,7 +300,7 @@ def make_foreground_thresh_fun(prob_foreground = 0.99):
     
     Parameters
     ------------
-    a : 2-D numpy array
+    img : 2-D numpy array
       The grayscale image. Can be either floats on the interval [0,1] or
       ints on the interval [0,255]. 
     prob_foreground : float, optional
@@ -314,7 +314,7 @@ def make_foreground_thresh_fun(prob_foreground = 0.99):
       The threshold above which pixels in the image are likely part of the
       foreground. 
     '''
-    hist, bin_edges, background_count = get_hist_and_background_count(a)
+    hist, bin_edges, background_count = get_hist_and_background_count(img)
     probabilities = 1 - np.minimum(background_count / hist, 1)
     th = bin_edges[np.argmax(probabilities >= prob_foreground)]
     return th
