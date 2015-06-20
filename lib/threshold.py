@@ -70,22 +70,21 @@ def threshold(img, threshold_function, num_blocks, block_dims = None,
   points = best_candidate_sample(candidate_coords, num_blocks)
   timeEnd("select block centers")
 
-  timeStart("calculate thresholds for blocks of size %s" % block_dim)
-  th = []
-  for p in points:
-    block = get_block(img, p, block_dims)
+  def get_threshold_for_block(center):
+    block = get_block(img, center, block_dims)
     if (type(block) is MaskedArray):
-      threshold = threshold_function(block.compressed())
+      return threshold_function(block.compressed())
     else:
-      threshold = threshold_function(block)
-    th.append(threshold)
-  th = np.asarray(th)
+      return threshold_function(block)
+
+  timeStart("calculate thresholds for blocks of size %s" % block_dim)
+  thresholds = np.asarray([ get_threshold_for_block(center) for center in points ])
   timeEnd("calculate thresholds for blocks of size %s" % block_dim)
 
   timeStart("fit 2-D spline")
   # Maybe consider using lower-order spline for large images 
   # (if large indices create problems for cubic functions)
-  fit = spline2d(points[:,0], points[:,1], th, 
+  fit = spline2d(points[:,0], points[:,1], thresholds, 
            bbox = [0, img_dims[0], 0, img_dims[1]], 
            kx = spline_order, ky = spline_order,
            s = num_blocks * smoothing)
