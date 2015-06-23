@@ -1,6 +1,6 @@
 from timer import timeStart, timeEnd
 
-from threshold_image import threshold_image
+from otsu_threshold_image import otsu_threshold_image
 from hough_lines import get_all_hough_lines
 from skimage.morphology import remove_small_objects
 from scipy import misc
@@ -15,7 +15,7 @@ PARAMS = {
 
 def detect_meanlines(masked_image, scale=1, debug_dir=False):
   timeStart("threshold image")
-  black_and_white_image = threshold_image(masked_image)
+  black_and_white_image = otsu_threshold_image(masked_image)
   timeEnd("threshold image")
 
   if debug_dir:

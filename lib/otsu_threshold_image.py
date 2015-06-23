@@ -1,7 +1,7 @@
 from skimage.filters import threshold_otsu
 from numpy.ma.core import MaskedArray
 
-def threshold_image(grayscale_image):
+def otsu_threshold_image(grayscale_image):
   if (type(grayscale_image) is MaskedArray):
     threshold_value = threshold_otsu(grayscale_image.compressed())
   else:
