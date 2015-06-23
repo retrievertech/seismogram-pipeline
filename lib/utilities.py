@@ -16,8 +16,8 @@ def normalize(a):
   elements and then divides all elements by the resulting maximum. All 
   elements in the returned array are in the interval [0,1].
   '''
-  b = a - np.amin(a)
-  b = b.astype(float) / np.amax(b)
+  b = (a - np.amin(a)).astype(float)
+  b /= np.amax(b)
   return b
 
 def percent_background(a):
