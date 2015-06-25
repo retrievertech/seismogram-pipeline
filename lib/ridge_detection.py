@@ -80,7 +80,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   timeEnd("otsu thresholds x & y")
   
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
-  timeStart("create gaussian image pyramid at "+str(num_scales)+" scales")
+  timeStart("create gaussian image pyramid at %s scales" % num_scales)
   # a geometric progression of standard deviations for gaussian kernels
   sigma_list = np.array([min_sigma * (sigma_ratio ** i)
               for i in range(num_scales + 1)])
@@ -89,7 +89,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             for s in sigma_list]
   gaussian_blurs_v = [gaussian_filter1d(img, s, 1) \
             for s in sigma_list]
-  timeEnd("create gaussian image pyramid at "+str(num_scales)+" scales")
+  timeEnd("create gaussian image pyramid at %s scales" % num_scales)
   
   image_cube_h = np.zeros((img.shape[0], img.shape[1], num_scales))
   image_cube_v = np.zeros((img.shape[0], img.shape[1], num_scales))
