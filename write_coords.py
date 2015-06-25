@@ -24,9 +24,9 @@ y_coords = []
 all_x = []
 all_y = []
 timeStart("get coordinates")
-for dicts in xrange(len(get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\metadata\segments.json')["features"])):
+for dicts in xrange(len(features["features"])):
     timeStart("coordinate dict")
-    for coords in xrange(len(get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\metadata\segments.json')["features"][dicts]["geometry"]["coordinates"])):
+    for coords in xrange(len(features["features"][dicts]["geometry"]["coordinates"])):
         timeStart("coordinate")
         coordinate = features["features"][dicts]["geometry"]["coordinates"][coords]
         x_coords.append(coordinate[0])
