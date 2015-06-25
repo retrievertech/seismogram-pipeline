@@ -102,15 +102,20 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
     # add to the exclusion layer all convex pixels in image_cube_h[:,:,i]
     exclusion_layer = (exclusion_layer | (image_cube_h[:,:,i] < -convex_threshold))
     exclusion[:,:,i] = exclusion_layer
+
   
   footprint_h = np.ones((3,1,3), dtype=bool)
   image_cube_h_norm = normalize(image_cube_h)
+
+  # maxima_h is a boolean array
   maxima_h = peak_local_max(image_cube_h_norm, indices=False, min_distance=1, 
-          threshold_rel=0, threshold_abs=0, exclude_border = False,
-          footprint = footprint_h)
+          threshold_rel=0, threshold_abs=0, exclude_border=False,
+          footprint=footprint_h)
   maxima_h = maxima_h & (~exclusion) & (image_cube_h >= low_threshold)
   
-  # maxima_h is a boolean array
+  
+  # ridges_h is a 2D array that is true everywhere that
+  # that maxima_h has at least one true value across all scales
   ridges_h = np.amax(maxima_h, axis=-1)
 
   image_cube_h = np.where(maxima_h, image_cube_h, 0)
