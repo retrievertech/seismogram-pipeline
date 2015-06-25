@@ -21,9 +21,10 @@ from docopt import docopt
 
 def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.dir import ensure_dir_exists
+  from lib.debug import Debug
   
   if debug_dir:
-    ensure_dir_exists(debug_dir)
+    Debug.set_directory(debug_dir)
 
   ensure_dir_exists(out_dir)
 
@@ -40,7 +41,6 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.intersection_detection import find_intersections
   from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features
-  from scipy import misc
 
   paths = {
     "roi": out_dir+"/roi.json",
@@ -60,9 +60,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   print "\n--ROI--"
   timeStart("get region of interest")
-  boundary = get_boundary(img_gray, scale=scale, debug_dir=debug_dir)
-  lines = get_box_lines(boundary, debug_dir=debug_dir, image=img_gray)
-  corners = get_roi_corners(lines, debug_dir=debug_dir, image=img_gray)
+  boundary = get_boundary(img_gray, scale=scale)
+  lines = get_box_lines(boundary, image=img_gray)
+  corners = get_roi_corners(lines, image=img_gray)
   timeEnd("get region of interest")
 
   timeStart("convert roi to geojson")
@@ -81,12 +81,11 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   masked_image = mask_image(img_gray, roi_polygon)
   timeEnd("mask image")
 
-  if debug_dir:
-    misc.imsave(debug_dir+"/masked_image.png", masked_image.filled(0))
+  Debug.save_image("main", "masked_image", masked_image.filled(0))
 
 
   print "\n--MEANLINES--"
-  meanlines = detect_meanlines(masked_image, scale=scale, debug_dir=debug_dir)
+  meanlines = detect_meanlines(masked_image, scale=scale)
 
   timeStart("convert meanlines to geojson")
   meanlines_as_geojson = meanlines_to_geojson(meanlines)
@@ -99,8 +98,11 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   print "\n--FLATTEN BACKGROUND--"
   img_dark_removed, dark_pixels = \
-    flatten_background(masked_image, prob_background=0.95, return_background=True)
+    flatten_background(masked_image, prob_background=0.95,
+                       return_background=True, debug_dir=debug_dir)
   
+  Debug.save_image("main", "flattened_background", img_dark_removed)
+
 
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")

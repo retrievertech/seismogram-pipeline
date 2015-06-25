@@ -93,8 +93,8 @@ def threshold(img, threshold_function, num_blocks, block_dims = None,
   timeEnd("fit 2-D spline")
   return th_new
 
-def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
-  from scipy import misc
+def debug_blocks(img, points, block_dims, threshold_function):
+  from debug import Debug
   from skimage.draw import line, circle
   from skimage.color import gray2rgb
 
@@ -112,7 +112,7 @@ def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
       print "threshold block error"
       print e
       bad_block_points.append(center)
-      misc.imsave(debug_dir+"/bad_block_"+str(center)+".png", block)
+      Debug.save_image("threshold", "bad_block_"+str(center), block)
 
   debug_image = gray2rgb(np.copy(img))
   
@@ -145,7 +145,7 @@ def debug_blocks(img, points, block_dims, threshold_function, debug_dir):
     rr, cc = circle(center[0], center[1], 20)
     debug_image[rr, cc] = [1.0, 0, 0]
 
-  misc.imsave(debug_dir+"/threshold_blocks.png", debug_image)
+  Debug.save_image("threshold", "threshold_blocks", debug_image)
 
 def get_block(img, center, block_dims):
   '''
