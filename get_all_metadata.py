@@ -124,6 +124,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   img_skel, dist = medial_axis(img_bin, return_distance=True)
   timeEnd("get medial axis skeleton and distance transform")
 
+  Debug.save_image("skeletonize", "skeleton", img_skel)
+
 
   print "\n--INTERSECTIONS--"
   intersections = find_intersections(img_bin, img_skel, dist, figure=False)
@@ -139,6 +141,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   timeStart("convert to image")
   intersection_image = intersections.asImage()
   timeEnd("convert to image")
+
+  Debug.save_image("intersections", "intersections", intersection_image)
 
 
   print "\n--SEGMENTS--"

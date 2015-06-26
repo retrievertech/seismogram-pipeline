@@ -13,6 +13,7 @@ Created on Wed Feb 11 18:20:36 2015
 """
 
 from lib.timer import timeStart, timeEnd
+from lib.debug import Debug
 
 import numpy as np
 from math import log
@@ -167,7 +168,10 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   horizontal_regions = ridge_region_horiz(maxima_h, img.shape)
   ridges_v = ridges_v & (horizontal_regions == 0)            
   timeEnd("prioritize horizontal regions")
-    
+  
+  Debug.save_image("ridges", "vertical_ridges", ridges_v)
+  Debug.save_image("ridges", "horizontal_ridges", ridges_h)
+
   if figures == True:
     return (ridges_h, ridges_v)
   else:

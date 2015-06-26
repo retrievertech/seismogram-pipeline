@@ -6,6 +6,7 @@ Created on Wed Feb 25 13:58:26 2015
 """
 
 from lib.timer import timeStart, timeEnd
+from lib.debug import Debug
 
 import numpy as np
 from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
@@ -25,34 +26,50 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   image_canny = canny(img_gray)
   timeEnd("canny edge detection")
 
+  Debug.save_image("segments", "edges", image_canny)
+
   timeStart("fill corners")
   filled_corners_canny = fill_corners(image_canny)
   timeEnd("fill corners")
 
+  Debug.save_image("segments", "edges_with_corners", filled_corners_canny)
+
   timeStart("bitwise & and ~")
   img_bin = img_bin & (~ filled_corners_canny)
   timeEnd("bitwise & and ~")
+
+  Debug.save_image("segments", "binary_image_minus_edges", img_bin)
   
   timeStart("sobel filter")
   image_sobel = sobel(img_gray)
   timeEnd("sobel filter")
 
+  Debug.save_image("segments", "slopes", image_sobel)
+
   timeStart("otsu threshold")
   steep_slopes = image_sobel > threshold_otsu(image_sobel)
   timeEnd("otsu threshold")
 
+  Debug.save_image("segments", "steep_slopes", steep_slopes)
+
   timeStart("binary erosion")
   steep_slopes = binary_erosion(steep_slopes, square(3, dtype=bool))
   timeEnd("binary erosion")
+
+  Debug.save_image("segments", "eroded_steep_slopes", steep_slopes)
 
   timeStart("bitwise & and ~")
   segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) & 
           (~ steep_slopes))
   timeEnd("bitwise & and ~")
 
+  Debug.save_image("segments", "skeleton_minus_intersections_minus_edges_minus_steep_slopes", segments_bin)
+
   timeStart("reverse medial axis")
   rmat = reverse_medial_axis(segments_bin, dist)
   timeEnd("reverse medial axis")
+
+  Debug.save_image("segments", "reverse_medial_axis", rmat)
 
   # maybe, instead of running medial_axis again, do nearest-neighbor interp    
   timeStart("skeletonize")
@@ -74,6 +91,15 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   timeStart("add ridges to segments")
   add_ridges_to_segments(ridges_h, ridges_v, segments)
   timeEnd("add ridges to segments")
+
+  if Debug.active:
+    from lib.segment_coloring import gray2prism, color_markers
+    num_traces = np.amax(image_segments)
+    traces_colored = (image_segments + num_traces * (image_segments % 4)) / float(4 * num_traces)
+    traces_colored = gray2prism(traces_colored)
+    # Color background black
+    traces_colored = color_markers(np.logical_not(img_bin), traces_colored, [0,0,0])
+    Debug.save_image("segments", "segment_regions", traces_colored)
 
   if figure == False:
     return segments
