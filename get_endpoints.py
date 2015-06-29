@@ -4,8 +4,8 @@ Description:
   Extract segment endpoints from a segments.json file
 
 Usage:
-  write_coords.py --segments <filename> (--output <filename> | --output_csv <filaname>)
-  write_coords.py -h | --help
+  get_endpoints.py --segments <filename> (--output <filename> | --output_csv <filaname>)
+  get_endpoints.py -h | --help
 
 Options:
   -h --help                Show this screen.
