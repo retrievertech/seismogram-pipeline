@@ -5,20 +5,14 @@ from lib.geojson_io import get_features
 features = get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\metadata\segments.json')
 from lib.timer import timeStart, timeEnd
 
-x_coords = []
-y_coords = []
+
 all_x = []
 all_y = []
 timeStart("get coordinates")
 for feature in features["features"]:
-    coordinates = feature["geometry"]["coordinates"]
-    for coord in coordinates:
-        x_coords.append(coord[0])
-        y_coords.append(coord[1])
-    all_x.append(x_coords)
-    x_coords = []
-    all_y.append(y_coords)
-    y_coords = []
+  coordinates = np.array(feature["geometry"]["coordinates"]) # turn the list of coords into a fancy 2D numpy array
+  all_x.append(coordinates[:, 0]) # numpy arrays are indexed [row, column], so [:, 0] means "all rows, 0th column"
+  all_y.append(coordinates[:, 1])
 timeEnd("get coordinates")
 
 average_y = []
