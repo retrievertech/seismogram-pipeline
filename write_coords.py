@@ -109,7 +109,6 @@ def write_csv(out_filename, data):
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
-  print arguments
   segments_file = arguments["--segments"]
   geojson_out_file = arguments["--output"]
   csv_out_file = arguments["--output_csv"]
