@@ -73,7 +73,11 @@ def generate_geojson(data):
 
   for i in xrange(len(data["endpoints"])):
     segment = {
-      "geometry": [data["startpoints"][i], data["endpoints"][i]],
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [data["startpoints"][i], data["endpoints"][i]]
+      },
       # The std deviation and average data is written into the GeoJson
       # as auxiliary property data
       "properties": {
