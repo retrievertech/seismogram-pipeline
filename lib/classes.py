@@ -13,8 +13,8 @@ from scipy.interpolate import UnivariateSpline
 class segment:
   '''
   Segment docstring placeholder
-  '''    
-  
+  '''
+
   def __init__(self, pixel_coords, image_shape, ID=0):
     self.set_region(pixel_coords, image_shape)
     self.ID = ID
@@ -25,38 +25,38 @@ class segment:
     #self.domain = self.region.region_domain
     #self.range = self.region.region_range
     self.set_linear_fit()
-  
+
   def binary_image(self):
     return self.region.binary_image()
-  
+
   def add_ridge_line(self, pixel_coords):
     self.ridge_line = pixel_coords
     #self.set_pixel_series()
-    if self.ridge_line.size > 2:            
+    if self.ridge_line.size > 2:
       self.set_center_line(self.ridge_line)
       self.has_center_line = True
     else:
       self.has_center_line = False
-  
+
   def add_horizontal_ridges(self, coords):
-    self.ridge_line_h = coords        
-    
+    self.ridge_line_h = coords
+
   def add_vertical_ridges(self, coords):
     self.ridge_line_v = coords
-  
+
   def set_pixel_series(self):
     self.pixel_series = ridge_line_to_series(self.ridge_line)
     #self.set_center_line()
-  
+
   def plot_ridge_line(self):
     scatter(self.ridge_line[:,1], (-self.ridge_line[:,0]))
-  
-  def plot_pixel_series(self):    
+
+  def plot_pixel_series(self):
     scatter(self.pixel_series[:,1], (-self.pixel_series[:,0]))
-  
+
   def set_linear_fit(self):
     self.linear_fit = linear_fit(self.region.coords)
-    
+
   def set_center_line(self, series):
     self.center_line = series_to_center_line(series)
 
@@ -74,8 +74,8 @@ class region:
   region_range = np.array([0,0], dtype=int)
   #size = 0
 
-  
-  def __init__(self, pixel_coords, image_shape, region_ID=0):    
+
+  def __init__(self, pixel_coords, image_shape, region_ID=0):
     self.coords = pixel_coords
     self.ii = self.coords[:,0]
     self.jj = self.coords[:,1]
@@ -83,7 +83,7 @@ class region:
     self.ID = region_ID
     self.calc_properties()
     self.create_binary()
-  
+
   def calc_properties(self):
     # calculate domain, range, upper-left corner,
     # centroid, width, height, and size (i.e. number of pixels in region)
@@ -96,7 +96,7 @@ class region:
     self.size = self.coords.shape[0]
     self.height = self.region_range[1] - self.region_range[0] + 1
     self.width = self.region_domain[1] - self.region_domain[0] + 1
-    
+
   def add_pixels(self, pixel_coords):
     pixel_list = list(self.coords)
     pixel_list = pixel_list + list(pixel_coords)
@@ -104,8 +104,8 @@ class region:
     pixel_list = list(set(pixel_list)) # remove duplicates
     pixel_list = np.asarray(tuple(pixel_list), dtype=int)
     self.coords = pixel_list
-    self.calc_properties()        
-    
+    self.calc_properties()
+
   def remove_pixels(self, pixel_coords):
     curr_pixels = set(map(tuple, list(self.coords)))
     pixels_to_remove = set(map(tuple, list(pixel_coords)))
@@ -113,24 +113,24 @@ class region:
     new_pixel_list = np.asarray(tuple(new_pixel_list), dtype=int)
     self.coords = new_pixel_list
     self.calc_properties()
-  
+
   def create_binary(self):
     # create two boolean arrays, one representing the region itself,
     # the other representing everything else in the bounding box that
     # contains the region
     ii_offset = self.ii - self.ul_corner[0]
-    jj_offset = self.jj - self.ul_corner[1] 
+    jj_offset = self.jj - self.ul_corner[1]
     self.binary = np.zeros((self.height, self.width), dtype=bool)
     self.binary[ii_offset, jj_offset] = True
     self.mask = (~self.binary)
-  
+
   def binary_image(self):
     img = np.zeros(self.dims, dtype=bool)
     img[self.coords[:,0], self.coords[:,1]] = True
     #for p in self.coords:
     #    img[p[0], p[1]] = True
     return img
-  
+
   def is_in_region(self, pixel_coords):
     matches = np.logical_and(self.coords[:,0] == pixel_coords[0],
                  self.coords[:,1] == pixel_coords[1])
@@ -156,12 +156,12 @@ class node:
     self.segment_IDs.append(seg.ID)
     self.segment_IDs.sort()
     self.degree = self.degree + 1
-  
+
   def get_segments(self):
     return segment_IDs
 
-class pixel_path:    
-  ID = 0    
+class pixel_path:
+  ID = 0
   pixel_path = []
   end1 = (0,0)
   end2 = (0,0)
@@ -171,7 +171,7 @@ class pixel_path:
   displacement = 0
   path_domain = (0,0)   # min and max column values
   path_range = (0,0)  # min and max row values
-  
+
   def __init__(self, pixels, ID):
     if len(pixels) > 0:
       self.pixel_path = pixels
@@ -182,20 +182,20 @@ class pixel_path:
     self.length = len(self.pixel_path)
     self.end1 = self.pixel_path[0]
     self.end2 = self.pixel_path[-1]
-    self.displacement = sqrt((self.end1[0] - self.end2[0])^2 + 
+    self.displacement = sqrt((self.end1[0] - self.end2[0])^2 +
                  (self.end1[1] - self.end2[1])^2)
     self.path_domain[0] = min(self.pixel_path, key=lambda x: x[1])
     self.path_domain[1] = max(self.pixel_path, key=lambda x: x[1])
     self.path_range[0] = min(self.pixel_path, key=lambda x: x[0])
     self.path_range[1] = max(self.pixel_path, key=lambda x: x[0])
 
-  
+
   def extend_path(self, pixels):
-    '''Input should be a list of tuples representing pixels. 
+    '''Input should be a list of tuples representing pixels.
     '''
     self.pixel_path = self.pixel_path + pixels
     self.calc_properties()
-  
+
   def binary_image(self, dims):
     img = np.zeros(dims, dtype=bool)
     for p in self.pixel_path:
@@ -212,9 +212,9 @@ class pixel_series:
   end2_linear_fit = np.array([0,0])
   end1_quadratic_fit = np.array([0,0,0])
   end2_quadratic_fit = np.array([0,0,0])
-  
+
   END_LENGTH = 6
-  
+
   def __init__(self, pixels, ID):
     if len(pixels) > 0:
       self.pixel_series = pixels
@@ -227,7 +227,7 @@ class pixel_series:
     self.series_domain[1] = np.amax(self.coords[:,1])
     self.series_range[0] = np.amin(self.coords[:,0])
     self.series_range[1] = np.amax(self.coords[:,0])
-    
+
   def get_segment(self, col1, col2):
     i1 = col1 - self.series_domain[0]
     i2 = col2 - self.series_domain[0]
@@ -238,35 +238,42 @@ class pixel_series:
 
   def get_linear_fits(self):
     if self.length >= END_LENGTH:
-      end = self.get_segment(self.series_domain[0], 
+      end = self.get_segment(self.series_domain[0],
                    self.series_domain[0] + END_LENGTH - 1)
       self.end1_linear_fit = linear_fit(end)
-      end = self.get_segment(self.series_domain[1] - END_LENGTH + 1, 
+      end = self.get_segment(self.series_domain[1] - END_LENGTH + 1,
                    self.series_domain[1])
       self.end2_linear_fit = linear_fit(end)
-      
+
   def get_quadratic_fits(self):
     if self.length >= END_LENGTH:
-      end = self.get_segment(self.series_domain[0], 
+      end = self.get_segment(self.series_domain[0],
                    self.series_domain[0] + END_LENGTH - 1)
       self.end1_quadratic_fit = quadratic_fit(end)
-      end = self.get_segment(self.series_domain[1] - END_LENGTH + 1, 
+      end = self.get_segment(self.series_domain[1] - END_LENGTH + 1,
                    self.series_domain[1])
       self.end2_quadratic_fit = quadratic_fit(end)
-      
+
+'''
 class center_line:
-  
+
   def __init__(self, spline, domain):
     self.spline = spline
     self.domain = domain
     self.x = np.arange(self.domain[0], self.domain[1]+1)
     self.y = self.spline(self.x)
- 
-'''   
+'''
+
+class center_line:
+  def __init__(self, series):
+    self.x = series[:,1]
+    self.y = series[:,0]
+
+'''
   # def all_pixels(self):
 
   def pixels(self, x):
-    df_dx = self.spline(x, 1)        
+    df_dx = self.spline(x, 1)
     f_l = self.spline(x)
     f_r = self.spline(x + 0.5)
     if df_dx == 0:
@@ -285,9 +292,9 @@ class center_line:
     cell_value = np.abs(1 / df_dx)
     cell_value[0] = left_cell_value
     cell_value[-1] = right_cell_value
-    
 
-    
+
+
     num_divs = np.abs(np.round(df_dx))
     div_size = 1 / num_divs
     divs = np.arange((x - 0.5 + (div_size / 2)), (x + 0.5), div_size)
@@ -305,13 +312,13 @@ class center_line:
     y_u = np.ceil(y)
     y_d = np.floor(y)
 '''
-    
-    
+
+
 '''
 Linear regression functions
 '''
 def linear_fit(coords):
-  y = coords[:,0]    
+  y = coords[:,0]
   x0 = np.ones_like(coords[:,1])
   x1 = coords[:,1]
   A = np.array([x1, x0])
@@ -319,7 +326,7 @@ def linear_fit(coords):
   return w
 
 def quadratic_fit(coords):
-  y = coords[:,0]    
+  y = coords[:,0]
   x0 = np.ones_like(coords[:,1])
   x1 = coords[:,1]
   x2 = coords[:,1] ^ 2
@@ -344,7 +351,7 @@ def get_ridges_in_region(img_ridges, reg):
     The image containing the ridge lines.
   reg : region
     The region of a segment.
-  
+
   Returns
   ---------
   ridge_coords : numpy array
@@ -358,13 +365,13 @@ def ridges_to_centerline(ridge_h_coords, ridge_v_coords):
   if (ridge_h_coords.size == 0) and (ridge_v_coords.size == 0):
     return np.array([[-1, -1]])
   if ridge_v_coords.size > 0:
-    domain_v = np.array([np.amin(ridge_v_coords[:,1]), 
+    domain_v = np.array([np.amin(ridge_v_coords[:,1]),
                np.amax(ridge_v_coords[:,1])], dtype=int)
     truncate = True
   else:
     truncate = False
-  if ridge_h_coords.size > 0:    
-    domain_h = np.array([np.amin(ridge_h_coords[:,1]), 
+  if ridge_h_coords.size > 0:
+    domain_h = np.array([np.amin(ridge_h_coords[:,1]),
                np.amax(ridge_h_coords[:,1])], dtype=int)
   else:
     domain_h = domain_v[::-1]
@@ -383,7 +390,7 @@ def ridge_line_to_series(coords):
   if coords.size == 0:
     return np.array([[0,0]])
   domain = (min(coords[:,1]), max(coords[:,1]))
-  series = []    
+  series = []
   for x in range(domain[0], domain[1] + 1):
     y = coords[coords[:,1] == x][:,0]
     if y.size > 0:
@@ -396,10 +403,10 @@ def ridge_line_to_series(coords):
 def vertical_ridge_line_to_series(coords):
   if coords.size == 0:
     return np.array([[0,0]])
-  domain = (min(coords[:,1]), max(coords[:,1]))    
-  series = []    
+  domain = (min(coords[:,1]), max(coords[:,1]))
+  series = []
   if (domain[1] - domain[0]) < 2:
-    return np.array([0,0])    
+    return np.array([0,0])
   # Exclude first and last columns of vertical ridge pixels
   for x in range(domain[0] + 1, domain[1]):
     y = coords[coords[:,1] == x][:,0]
@@ -412,19 +419,25 @@ def vertical_ridge_line_to_series(coords):
 '''
 # version using LSQUnivariateSpline and specifying points_per_knot
 def series_to_center_line(series, points_per_knot = 5):
-  domain = (min(series[:,1]), max(series[:,1]))    
-  num_points = series.size / 2    
+  domain = (min(series[:,1]), max(series[:,1]))
+  num_points = series.size / 2
   if (domain[1] - domain[0]) < 5:
     return None
   num_knots = np.floor((domain[1] - domain[0]) / points_per_knot)
   points_per_knot = float(num_points) / num_knots
-  knots = np.linspace(domain[0] + points_per_knot, 
-            domain[1] - points_per_knot, 
+  knots = np.linspace(domain[0] + points_per_knot,
+            domain[1] - points_per_knot,
             num_knots - 1)
   fit = LSQUnivariateSpline(series[:,1], series[:,0], t=knots, bbox=domain)
   x = np.arange(domain[0], domain[1]+1)
   y = fit(x)
   return np.hstack((y[:, np.newaxis], x[:, np.newaxis]))
+'''
+'''
+Turning off splining for now
+'''
+def series_to_center_line(series):
+  return center_line(series)
 '''
 def series_to_center_line(series, smoothing_param=(1/(2*0.8))):
   domain = (min(series[:,1]), max(series[:,1]))
@@ -432,11 +445,11 @@ def series_to_center_line(series, smoothing_param=(1/(2*0.8))):
     order = 5
   else:
     order = max(1, series[:,0].size - 3)
-  fit = UnivariateSpline(series[:,1], series[:,0], s=smoothing_param, 
+  fit = UnivariateSpline(series[:,1], series[:,0], s=smoothing_param,
                bbox=domain, k=order)
   cl = center_line(fit, domain)
   return cl
-
+'''
 class intersection(region):
   pass
 
@@ -448,5 +461,3 @@ class timing_mark(region):
 
 class gap(region):
   pass
-  
-
