@@ -20,6 +20,7 @@ import csv
 import numpy as np
 from lib.geojson_io import get_features
 from lib.timer import timeStart, timeEnd
+from geojson import Feature, FeatureCollection, LineString
 
 def get_endpoint_data(features):
   """
@@ -71,23 +72,16 @@ def generate_geojson(data):
     "features": []
   }
 
-  for i in xrange(len(data["endpoints"])):
-    segment = {
-      "type": "Feature",
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [data["startpoints"][i], data["endpoints"][i]]
-      },
-      # The std deviation and average data is written into the GeoJson
-      # as auxiliary property data
-      "properties": {
+  def segment(i):
+    return Feature(
+      geometry = LineString([data["startpoints"][i], data["endpoints"][i]]),
+      properties = {
         "average_y": data["average_y"][i],
-        "standard_deviation": data["std_deviation_y"][i],
+        "standard_deviation": data["std_deviation_y"][i]
       }
-    }
-    geojson_data["features"].append(segment)
+    )
 
-  return geojson_data
+  return FeatureCollection(map(segment, xrange(len(data["endpoints"]))))
 
 def write_geojson(out_filename, geojson_data):
   """
