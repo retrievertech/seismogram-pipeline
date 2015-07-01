@@ -150,7 +150,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   ridges_h = ridges_h & (max_values_h >= high_threshold)
 
   # Vertical ridges need to either be prominent or highly connected
-  ridges_v = (ridges_v & ((max_values_h >= high_threshold) |
+  ridges_v = (ridges_v & ((max_values_v >= high_threshold) |
               remove_small_objects(ridges_v, min_ridge_length,
                          connectivity = 2)))
 
