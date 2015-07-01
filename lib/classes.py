@@ -182,7 +182,7 @@ class pixel_path:
     self.length = len(self.pixel_path)
     self.end1 = self.pixel_path[0]
     self.end2 = self.pixel_path[-1]
-    self.displacement = sqrt((self.end1[0] - self.end2[0])^2 +
+    self.displacement = sqrt((self.end1[0] - self.end2[0])^2
                  (self.end1[1] - self.end2[1])^2)
     self.path_domain[0] = min(self.pixel_path, key=lambda x: x[1])
     self.path_domain[1] = max(self.pixel_path, key=lambda x: x[1])
