@@ -102,7 +102,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
     image_cube_h[:,:,i] = ((gaussian_blurs_h[i] - gaussian_blurs_h[i + 1]))
     # add to the exclusion layer all convex pixels in image_cube_h[:,:,i]
     exclusion_layer = (exclusion_layer | (image_cube_h[:,:,i] < -convex_threshold))
-    Debug.save("ridges", "exclusion_layer-" + pad(i), exclusion_layer)
+    Debug.save_image("ridges", "exclusion_layer-" + pad(i), exclusion_layer)
     exclusion[:,:,i] = exclusion_layer
 
 
