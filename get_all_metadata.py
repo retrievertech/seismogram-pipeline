@@ -22,7 +22,7 @@ from docopt import docopt
 def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.dir import ensure_dir_exists
   from lib.debug import Debug
-  
+
   if debug_dir:
     Debug.set_directory(debug_dir)
 
@@ -100,7 +100,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   img_dark_removed, dark_pixels = \
     flatten_background(masked_image, prob_background=0.95,
                        return_background=True, debug_dir=debug_dir)
-  
+
   Debug.save_image("main", "flattened_background", img_dark_removed)
 
 
@@ -110,14 +110,14 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   ridges_h, ridges_v = find_ridges(img_dark_removed, background)
   ridges = ridges_h | ridges_v
   timeEnd("get horizontal and vertical ridges")
-  
+
 
   print "\n--THRESHOLDING--"
   timeStart("get binary image")
   img_bin = binary_image(img_dark_removed, markers_trace=ridges,
                markers_background=background)
   timeEnd("get binary image")
-  
+
 
   print "\n--SKELETONIZE--"
   timeStart("get medial axis skeleton and distance transform")
@@ -133,7 +133,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   timeStart("convert to geojson")
   intersection_json = intersections.asGeoJSON()
   timeEnd("convert to geojson")
-  
+
   timeStart("saving intersections as geojson")
   save_features(intersection_json, paths["intersections"])
   timeEnd("saving intersections as geojson")
@@ -150,11 +150,11 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   segments = get_segments(img_gray, img_bin, img_skel, dist, intersection_image,
               ridges_h, ridges_v)
   timeEnd("get segments")
-  
+
   timeStart("convert segments to geojson")
   segments_as_geojson = segments_to_geojson(segments)
   timeEnd("convert segments to geojson")
-  
+
   timeStart("saving segments as geojson")
   save_features(segments_as_geojson, paths["segments"])
   timeEnd("saving segments as geojson")
@@ -162,9 +162,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   #return (img_gray, ridges, img_bin, intersections, img_seg)
   # return segments
   # detect center lines
-  
+
   # connect segments
-  
+
   # output data
 
   timeEnd("get all metadata")

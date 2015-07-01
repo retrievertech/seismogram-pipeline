@@ -30,11 +30,11 @@ def get_segment_assignments(segments_file, meanlines_file, out_file):
   timeStart("get segment assignments")
   segments = get_features(segments_file)
   meanlines = get_features(meanlines_file)
-  
+
   timeStart("assign segments to meanlines")
   assignments = assign_segments_to_meanlines(segments, meanlines)
   timeEnd("assign segments to meanlines")
-  
+
   save_assignments_as_json(assignments, out_file)
   timeEnd("get segment assignments")
 

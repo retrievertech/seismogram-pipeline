@@ -20,7 +20,7 @@ from binarization import fill_corners
 from classes import segment, get_ridge_line
 from geojson import LineString, Feature, FeatureCollection
 
-def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
+def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
          ridges_h, ridges_v, figure=False):
   timeStart("canny edge detection")
   image_canny = canny(img_gray)
@@ -39,7 +39,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   timeEnd("bitwise & and ~")
 
   Debug.save_image("segments", "binary_image_minus_edges", img_bin)
-  
+
   timeStart("sobel filter")
   image_sobel = sobel(img_gray)
   timeEnd("sobel filter")
@@ -59,7 +59,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   Debug.save_image("segments", "eroded_steep_slopes", steep_slopes)
 
   timeStart("bitwise & and ~")
-  segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) & 
+  segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) &
           (~ steep_slopes))
   timeEnd("bitwise & and ~")
 
@@ -71,7 +71,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   Debug.save_image("segments", "reverse_medial_axis", rmat)
 
-  # maybe, instead of running medial_axis again, do nearest-neighbor interp    
+  # maybe, instead of running medial_axis again, do nearest-neighbor interp
   timeStart("skeletonize")
   _, rmat_dist = medial_axis(rmat, return_distance=True)
   timeEnd("skeletonize")
@@ -112,13 +112,13 @@ store segments in objects
 
 def img_seg_to_seg_objects(img_seg):
   '''
-  Creates segment objects from an array of labeled pixels.    
-  
+  Creates segment objects from an array of labeled pixels.
+
   Parameters
   ------------
   img_seg : 2-D numpy array of ints
-    An array with each pixel labeled according to its segment. 
-  
+    An array with each pixel labeled according to its segment.
+
   Returns
   --------
   segments : list of segments
@@ -132,7 +132,7 @@ def img_seg_to_seg_objects(img_seg):
     if it[0] == 0:
       it.iternext()
       continue
-    
+
     segment_idx = it[0] - 1
     segment_coordinates[segment_idx].append(np.array(it.multi_index))
     it.iternext()

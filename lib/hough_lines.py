@@ -17,7 +17,7 @@ def get_best_hough_lines(image, min_angle, max_angle, min_separation_distance, m
   return get_line_endpoints_in_image(image, peak_angles[best_hough_idx], peak_distances[best_hough_idx])
 
 def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance, min_separation_angle):
-  peak_hough, peak_angles, peak_distances = get_hough_line_peaks(image, min_angle, max_angle, min_separation_distance, min_separation_angle)    
+  peak_hough, peak_angles, peak_distances = get_hough_line_peaks(image, min_angle, max_angle, min_separation_distance, min_separation_angle)
   return [ get_line_endpoints_in_image(image, angle, radius) for angle, radius in zip(peak_angles, peak_distances)]
 
 def get_line_endpoints_in_image(image, angle, radius):

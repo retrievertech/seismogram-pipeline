@@ -9,7 +9,7 @@ def timeStart(key):
   global depth, justCalledTimeStart
 
   timeDict[key] = time()
-  
+
   printStart(key, justCalledTimeStart)
 
   depth += 1
@@ -19,7 +19,7 @@ def timeEnd(key):
   global depth, justCalledTimeStart
 
   depth -= 1
-    
+
   printEnd(key, justCalledTimeStart)
   del timeDict[key]
 
