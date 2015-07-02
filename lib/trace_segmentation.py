@@ -164,10 +164,12 @@ def image_overlay(img, overlay, mask = None):
 
 def segments_to_geojson(segments):
   geojson_line_segments = []
+  idx = 0
   for seg in segments.itervalues():
     if seg.has_center_line == True:
       center_line = zip(map(int, seg.center_line.x), map(int, seg.center_line.y))
-      feature = Feature(geometry = LineString(center_line))
+      feature = Feature(geometry = LineString(center_line), id = idx)
       geojson_line_segments.append(feature)
+      idx = idx + 1
   geojson_line_segments = FeatureCollection(geojson_line_segments)
   return geojson_line_segments

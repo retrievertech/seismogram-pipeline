@@ -30,6 +30,7 @@ def get_endpoint_data(features):
   """
   all_x = []
   all_y = []
+  ids = []
   average_y = []
   std_deviation_y = []
   startpoints = []
@@ -40,6 +41,7 @@ def get_endpoint_data(features):
     coordinates = np.array(feature["geometry"]["coordinates"]) # turn the list of coords into a fancy 2D numpy array
     all_x.append(coordinates[:, 0]) # numpy arrays are indexed [row, column], so [:, 0] means "all rows, 0th column"
     all_y.append(coordinates[:, 1])
+    ids.append(feature["id"])
   timeEnd("get coordinates")
 
   for values in xrange(len(all_y)):
@@ -57,6 +59,7 @@ def get_endpoint_data(features):
     endpoints.append(endpoint)
 
   return {
+    "ids": ids,
     "startpoints": startpoints,
     "endpoints": endpoints,
     "average_y": average_y,
@@ -70,6 +73,7 @@ def generate_geojson(data):
   def segment(i):
     return Feature(
       geometry = LineString([data["startpoints"][i], data["endpoints"][i]]),
+      id = data["ids"][i],
       properties = {
         "average_y": data["average_y"][i],
         "standard_deviation": data["std_deviation_y"][i]
