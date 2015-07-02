@@ -166,7 +166,7 @@ def segments_to_geojson(segments):
   geojson_line_segments = []
   for seg in segments.itervalues():
     if seg.has_center_line == True:
-      center_line = zip(seg.center_line.x, seg.center_line.y)
+      center_line = zip(map(int, seg.center_line.x), map(int, seg.center_line.y))
       feature = Feature(geometry = LineString(center_line))
       geojson_line_segments.append(feature)
   geojson_line_segments = FeatureCollection(geojson_line_segments)
