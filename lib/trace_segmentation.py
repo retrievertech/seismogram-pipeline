@@ -162,13 +162,14 @@ def image_overlay(img, overlay, mask = None):
   images_combined = 0.5 * (img + overlay)
   return np.where(mask, img, images_combined)
 
-def segments_to_geojson(segments):
+def segments_to_geojson(img_grayscale, segments):
   geojson_line_segments = []
   idx = 0
   for seg in segments.itervalues():
     if seg.has_center_line == True:
       center_line = zip(map(int, seg.center_line.x), map(int, seg.center_line.y))
-      feature = Feature(geometry = LineString(center_line), id = idx)
+      img_values = map(lambda pt : int(img_grayscale[pt[1], pt[0]]), center_line)
+      feature = Feature(geometry = LineString(center_line), id = idx, properties = { "values": img_values })
       geojson_line_segments.append(feature)
       idx = idx + 1
   geojson_line_segments = FeatureCollection(geojson_line_segments)

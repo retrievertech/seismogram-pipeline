@@ -30,7 +30,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   from lib.timer import timeStart, timeEnd
 
-  from lib.load_image import get_image
+  from lib.load_image import get_grayscale_image, get_image_as_float
   from skimage.morphology import medial_axis
   from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, corners_to_geojson
   from lib.polygon_mask import mask_image
@@ -52,9 +52,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   timeStart("get all metadata")
 
-
   timeStart("read image")
-  img_gray = get_image(in_file)
+  img_grayscale = get_grayscale_image(in_file)
+  img_gray = get_image_as_float(img_grayscale)
   timeEnd("read image")
 
 
@@ -152,7 +152,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   timeEnd("get segments")
 
   timeStart("convert segments to geojson")
-  segments_as_geojson = segments_to_geojson(segments)
+  segments_as_geojson = segments_to_geojson(img_grayscale, segments)
   timeEnd("convert segments to geojson")
 
   timeStart("saving segments as geojson")
