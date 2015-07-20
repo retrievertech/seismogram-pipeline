@@ -242,7 +242,8 @@ def get_expected_background_pixel_counts(pixel_counts):
   # Reflect the histogram values from 0 -> peak and copy them
   # into expected_background_counts[peak -> end]; this assumes the distribution
   # of background pixel values is symmetrical about its peak
-  expected_background_counts[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = pixel_counts[(peak_pixel_color - 1)::-1]
+  if peak_pixel_color != 0:
+    expected_background_counts[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = pixel_counts[(peak_pixel_color - 1)::-1]
 
   return expected_background_counts
 
