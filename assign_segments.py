@@ -70,7 +70,7 @@ def assign_segments(segments, meanlines, segment_data):
     
     for segment in segment_data["features"]:
         which_meanline = 0
-        dist = 20
+        dist = 45
         overlap_points = 0
         seg_isin = []
         #Distance depends on scale: play with this parameter
@@ -80,7 +80,7 @@ def assign_segments(segments, meanlines, segment_data):
             if  seg_dist < dist:
                 dist = seg_dist
                 which_meanline = meanline
-        if dist == 20:
+        if dist == 45:
             dist = "null"
         
         for domain_check in xrange(len(meanline_database[which_meanline]["domain"])):
@@ -96,6 +96,7 @@ def assign_segments(segments, meanlines, segment_data):
             meanline_database[which_meanline]["distances"].append(dist)
             meanline_database[which_meanline]["domain"].append(domain[segment["id"]])
         
+            
         elif dist == "null":
             stranded_segments.append(segment["id"])
 
@@ -114,28 +115,28 @@ def assign_segments(segments, meanlines, segment_data):
     for meanline_time in xrange(len(meanline_comp)):
         meanline_timing = []
         for stranded_timing in stranded_segments:
-            if 5 < meanline_comp[meanline_time]["slope"]*((segments["features"][stranded_timing]["geometry"]["coordinates"][0][0]) - meanlines["features"][meanline_time]["geometry"]["coordinates"][0][0]) + meanlines["features"][meanline_time]["geometry"]["coordinates"][0][1] - segments["features"][stranded_timing]["geometry"]["coordinates"][0][1] < 100 and len(segments["features"][stranded_timing]["geometry"]["coordinates"]) < 15 and segment_data["features"][stranded_timing]["properties"]["standard_deviation"] < 8:
+            if 5 < meanline_comp[meanline_time]["slope"]*((segments["features"][stranded_timing]["geometry"]["coordinates"][0][0]) - meanlines["features"][meanline_time]["geometry"]["coordinates"][0][0]) + meanlines["features"][meanline_time]["geometry"]["coordinates"][0][1] - segments["features"][stranded_timing]["geometry"]["coordinates"][0][1] < 100 and len(segments["features"][stranded_timing]["geometry"]["coordinates"]) < 18 and segment_data["features"][stranded_timing]["properties"]["standard_deviation"] < 8:
                 meanline_timing.append(stranded_timing)
         print meanline_time
         certain = []
         for timings in meanline_timing:
             timing_list = []
-            timing_guess = range(segment_data["features"][timings]["geometry"]["coordinates"][0][0], 4000, 232)
+            timing_guess = range(segment_data["features"][timings]["geometry"]["coordinates"][0][0], 15000, 232)
             number_included = 0
             for comb in meanline_timing:
                 for guesses in timing_guess:
-                    if abs(segment_data["features"][comb]["geometry"]["coordinates"][0][0] - guesses) < 11:
+                    if abs(segment_data["features"][comb]["geometry"]["coordinates"][0][0] - guesses) < 15:
                         number_included += 1
                         timing_list.append(comb)
-            print timing_list
         
-            if len(timing_list) > len(certain):
-                certain = timing_list
-                print certain
-        print meanline_timing
-        print certain
-        meanline_timing = certain
-        print meanline_timing
+            if len(timing_list) >= 3:
+                for timing_seg in timing_list:
+                    certain.append(timing_seg)
+                
+        
+        meanline_timing = set(certain)
+        for time_pop in meanline_timing:
+            stranded_segments.pop(stranded_segments.index(time_pop))
         each_timing = []
         x_plot_timing = []
         y_plot_timing = []
@@ -151,12 +152,55 @@ def assign_segments(segments, meanlines, segment_data):
         timing_x.append(x_plot_timing)
         timing_y.append(y_plot_timing)
         timing_marks.update({meanline_time: meanline_timing})
+        for time_segments in meanline_timing:
+            meanline_database[meanline_time]["segments"].append(time_segments)
+            meanline_database[meanline_time]["distances"].append(50)
+            meanline_database[meanline_time]["domain"].append(domain[time_segments])
+    
+    
+    to_pop_stranded = []
+    for remaining in stranded_segments:
+        overlap_points_remaining = 1
+        meanline_number = 0
+        save_dist = 500
+        for meanline_remaining in xrange(len(meanline_comp)):
+            remaining_dist = abs(segment_data["features"][remaining]["properties"]["average_y"]-(meanline_comp[meanline_remaining]["slope"]*(np.mean(domain[remaining]) - meanlines["features"][meanline_remaining]["geometry"]["coordinates"][0][0])+meanlines["features"][meanline_remaining]["geometry"]["coordinates"][0][1]))
+            if save_dist > remaining_dist:
+                save_dist = remaining_dist
+            overlap_point = 0
+            for domain_check in xrange(len(meanline_database[meanline_remaining]["domain"])):
+                overlapping = list(set(range(meanline_database[meanline_remaining]["domain"][domain_check][0], meanline_database[meanline_remaining]["domain"][domain_check][1])).intersection(range(int(domain[remaining][0]), int(domain[remaining][1]+1)))) 
+                if len(overlapping) != 0:
+                    overlap_point += len(overlapping)
+            
+            if overlap_point < overlap_points_remaining and save_dist != 500:
+                overlap_points_remaining = overlap_point
+                meanline_number = meanline_remaining
+        if save_dist != 500:
+            meanline_database[meanline_number]["segments"].append(remaining)
+            meanline_database[meanline_number]["distances"].append(save_dist)
+            meanline_database[meanline_number]["domain"].append(domain[remaining])
+            to_pop_stranded.append(remaining)
+    for to_pop in to_pop_stranded:
+        stranded_segments.pop(stranded_segments.index(to_pop))
+    
+            
+    """    
+        if overlap_points < 20 and dist != "null":
+            meanline_database[which_meanline]["segments"].append(segment["id"])
+            meanline_database[which_meanline]["distances"].append(dist)
+            meanline_database[which_meanline]["domain"].append(domain[segment["id"]])
         
-    
-    
-    
-    
-    
+        elif dist == "null":
+            stranded_segments.append(segment["id"])
+
+        else:
+            for seg2seg in seg_isin:
+                if meanline_database[which_meanline]["distances"][meanline_database[which_meanline]["segments"].index(seg2seg)] > dist:
+                    meanline_database[which_meanline]["distances"].pop(meanline_database[which_meanline]["segments"].index(seg2seg))
+                    meanline_database[which_meanline]["domain"].pop(meanline_database[which_meanline]["segments"].index(seg2seg))
+                    stranded_segments.append(meanline_database[which_meanline]["segments"].pop(meanline_database[which_meanline]["segments"].index(seg2seg)))
+    """
     """
     still_going = True
     while still_going:
@@ -247,6 +291,11 @@ def assign_segments(segments, meanlines, segment_data):
                 y_plot_meanline.append(each_segment[segment_no][segment_length][1])
         x_plot.append(x_plot_meanline)
         y_plot.append(y_plot_meanline)
+        
+    for segment_extend in xrange(len(timing_x)):
+        x_plot[segment_extend].extend(timing_x[segment_extend])
+        y_plot[segment_extend].extend(timing_y[segment_extend])        
+        
     """makes a data table of arrays with x and y values for points assigned to each meanline"""
       
     
@@ -263,13 +312,13 @@ def assign_segments(segments, meanlines, segment_data):
             orphan_y.append(orphan_array[orphan_no][orphan_length][1])
             
     plt.figure(num=1, figsize=(36, 16), dpi=2000)
-    plt.plot(timing_x[0], timing_y[0], 'bs', timing_x[1], timing_y[1], 'go', timing_x[2], timing_y[2], 'ro', timing_x[3], timing_y[3], 'co', timing_x[4], timing_y[4], 'mo', timing_x[5], timing_y[5], 'yo', timing_x[6], timing_y[6], 'ko', timing_x[7], timing_y[7], 'wo')
-    plt.axis([0, 3600, 1600, 0])
+    plt.plot(timing_x[0], timing_y[0], 'bs', timing_x[1], timing_y[1], 'go', timing_x[2], timing_y[2], 'ro', timing_x[3], timing_y[3], 'co', timing_x[4], timing_y[4], 'mo', timing_x[5], timing_y[5], 'yo', timing_x[6], timing_y[6], 'ko', timing_x[7], timing_y[7], 'wo', timing_x[8], timing_y[8], 'b^', timing_x[9], timing_y[9], 'go', timing_x[10], timing_y[10], 'ro', timing_x[11], timing_y[11], 'co', timing_x[12], timing_y[12], 'mo', timing_x[13], timing_y[13], 'yo', timing_x[14], timing_y[14], 'ko', timing_x[15], timing_y[15], 'wo', timing_x[16], timing_y[16], 'bo', timing_x[17], timing_y[17], 'go', timing_x[18], timing_y[18], 'ro', timing_x[19], timing_y[19], 'co', timing_x[20], timing_y[20], 'mo', timing_x[21], timing_y[21], 'yo', timing_x[22], timing_y[22], 'ko', timing_x[23], timing_y[23], 'wo', timing_x[24], timing_y[24], 'ys')
+    plt.axis([0, 15000, 5500, 500])
     plt.show()
     
     plt.figure(num=2, figsize=(36, 16), dpi=2000)
-    plt.plot(x_plot[0], y_plot[0], 'bs', x_plot[1], y_plot[1], 'go', x_plot[2], y_plot[2], 'ro', x_plot[3], y_plot[3], 'co', x_plot[4], y_plot[4], 'mo', x_plot[5], y_plot[5], 'yo', x_plot[6], y_plot[6], 'ko', x_plot[7], y_plot[7], 'wo')
-    plt.axis([0, 3600, 1600, 0])
+    plt.plot(x_plot[0], y_plot[0], 'bs', x_plot[1], y_plot[1], 'go', x_plot[2], y_plot[2], 'ro', x_plot[3], y_plot[3], 'co', x_plot[4], y_plot[4], 'mo', x_plot[5], y_plot[5], 'yo', x_plot[6], y_plot[6], 'ko', x_plot[7], y_plot[7], 'wo', x_plot[8], y_plot[8], 'b^', x_plot[9], y_plot[9], 'go', x_plot[10], y_plot[10], 'ro', x_plot[11], y_plot[11], 'co', x_plot[12], y_plot[12], 'mo', x_plot[13], y_plot[13], 'yo', x_plot[14], y_plot[14], 'ko', x_plot[15], y_plot[15], 'wo', x_plot[16], y_plot[16], 'bo', x_plot[17], y_plot[17], 'go', x_plot[18], y_plot[18], 'ro', x_plot[19], y_plot[19], 'co', x_plot[20], y_plot[20], 'mo', x_plot[21], y_plot[21], 'yo', x_plot[22], y_plot[22], 'ko', x_plot[23], y_plot[23], 'wo', x_plot[24], y_plot[24], 'ys')
+    plt.axis([0, 15000, 5500, 500])
     plt.show()
     
 
@@ -278,7 +327,7 @@ def assign_segments(segments, meanlines, segment_data):
     
     plt.figure(num=3, figsize=(36, 16), dpi=2000)
     plt.plot(orphan_x, orphan_y, 'bo')
-    plt.axis([0, 3600, 1600, 0])
+    plt.axis([0, 15000, 5500, 500])
     plt.show()
     
     """plt.figure(num=1, figsize=(51, 17), dpi=2000)
@@ -302,9 +351,10 @@ def generate_json(data):
 """as of now, it is in a format where it accesses specific files on my computer. I would appreciate if somebody
 could help me turn it into a command line usable format"""
         
-segments = get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\crop\segments.json')
-meanlines = get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\crop\meanlines.json')
-segment_data = get_features('C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\crop\endpoints.json')
+segments = get_features(r'C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\fullsize\segments.json')
+meanlines = get_features(r'C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\fullsize\meanlines.json')
+segment_data = get_features(r'C:\Users\Lowell\Documents\GitHub\seismogram-pipeline\fullsize\endpoints.json')
 assign_segments(segments, meanlines, segment_data)            
 data = meanline_database
 generate_json(data)
+
