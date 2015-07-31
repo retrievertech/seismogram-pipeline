@@ -5,6 +5,8 @@ from lib.timer import timeStart, timeEnd
 from geojson import Feature, FeatureCollection, LineString
 import json
 
+# make this True to enable debug printing
+debug = False
 
 def assign_segments_to_meanlines(segments, meanlines, segment_data):
     meanline_database = {}
@@ -101,7 +103,8 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
         for stranded_timing in stranded_segments:
             if 5 < meanline_comp[meanline_time]["slope"]*((segments["features"][stranded_timing]["geometry"]["coordinates"][0][0]) - meanlines["features"][meanline_time]["geometry"]["coordinates"][0][0]) + meanlines["features"][meanline_time]["geometry"]["coordinates"][0][1] - segments["features"][stranded_timing]["geometry"]["coordinates"][0][1] < 100 and len(segments["features"][stranded_timing]["geometry"]["coordinates"]) < 18 and segment_data["features"][stranded_timing]["properties"]["standard_deviation"] < 8:
                 meanline_timing.append(stranded_timing)
-        print meanline_time
+        if debug:
+            print meanline_time
         certain = []
         for timings in meanline_timing:
             timing_list = []
@@ -171,10 +174,11 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
             if meanline_distance[potential] < save_dist:
                 save_dist = meanline_distance[potential]
                 meanline_number = potential
-        print meanline_overlap
-        print candidates
-        print meanline_distance
-        print meanline_number
+        if debug:
+            print meanline_overlap
+            print candidates
+            print meanline_distance
+            print meanline_number
         meanline_database[meanline_number]["segments"].append(segments["features"][remaining]["id"])
         meanline_database[meanline_number]["distances"].append(save_dist)
         meanline_database[meanline_number]["domain"].append(domain[remaining])
