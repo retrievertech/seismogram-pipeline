@@ -6,6 +6,7 @@ Created on Wed Feb 25 13:58:26 2015
 """
 
 from lib.timer import timeStart, timeEnd
+from lib.debug import Debug
 
 import numpy as np
 from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
@@ -19,42 +20,58 @@ from binarization import fill_corners
 from classes import segment, get_ridge_line
 from geojson import LineString, Feature, FeatureCollection
 
-def get_segments(img_gray, img_bin, img_skel, dist, img_intersections, 
+def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
          ridges_h, ridges_v, figure=False):
   timeStart("canny edge detection")
   image_canny = canny(img_gray)
   timeEnd("canny edge detection")
 
+  Debug.save_image("segments", "edges", image_canny)
+
   timeStart("fill corners")
   filled_corners_canny = fill_corners(image_canny)
   timeEnd("fill corners")
 
+  Debug.save_image("segments", "edges_with_corners", filled_corners_canny)
+
   timeStart("bitwise & and ~")
   img_bin = img_bin & (~ filled_corners_canny)
   timeEnd("bitwise & and ~")
-  
+
+  Debug.save_image("segments", "binary_image_minus_edges", img_bin)
+
   timeStart("sobel filter")
   image_sobel = sobel(img_gray)
   timeEnd("sobel filter")
+
+  Debug.save_image("segments", "slopes", image_sobel)
 
   timeStart("otsu threshold")
   steep_slopes = image_sobel > threshold_otsu(image_sobel)
   timeEnd("otsu threshold")
 
+  Debug.save_image("segments", "steep_slopes", steep_slopes)
+
   timeStart("binary erosion")
   steep_slopes = binary_erosion(steep_slopes, square(3, dtype=bool))
   timeEnd("binary erosion")
 
+  Debug.save_image("segments", "eroded_steep_slopes", steep_slopes)
+
   timeStart("bitwise & and ~")
-  segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) & 
+  segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) &
           (~ steep_slopes))
   timeEnd("bitwise & and ~")
+
+  Debug.save_image("segments", "skeleton_minus_intersections_minus_edges_minus_steep_slopes", segments_bin)
 
   timeStart("reverse medial axis")
   rmat = reverse_medial_axis(segments_bin, dist)
   timeEnd("reverse medial axis")
 
-  # maybe, instead of running medial_axis again, do nearest-neighbor interp    
+  Debug.save_image("segments", "reverse_medial_axis", rmat)
+
+  # maybe, instead of running medial_axis again, do nearest-neighbor interp
   timeStart("skeletonize")
   _, rmat_dist = medial_axis(rmat, return_distance=True)
   timeEnd("skeletonize")
@@ -75,6 +92,15 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   add_ridges_to_segments(ridges_h, ridges_v, segments)
   timeEnd("add ridges to segments")
 
+  if Debug.active:
+    from lib.segment_coloring import gray2prism, color_markers
+    num_traces = np.amax(image_segments)
+    traces_colored = (image_segments + num_traces * (image_segments % 4)) / float(4 * num_traces)
+    traces_colored = gray2prism(traces_colored)
+    # Color background black
+    traces_colored = color_markers(np.logical_not(img_bin), traces_colored, [0,0,0])
+    Debug.save_image("segments", "segment_regions", traces_colored)
+
   if figure == False:
     return segments
   else:
@@ -86,13 +112,13 @@ store segments in objects
 
 def img_seg_to_seg_objects(img_seg):
   '''
-  Creates segment objects from an array of labeled pixels.    
-  
+  Creates segment objects from an array of labeled pixels.
+
   Parameters
   ------------
   img_seg : 2-D numpy array of ints
-    An array with each pixel labeled according to its segment. 
-  
+    An array with each pixel labeled according to its segment.
+
   Returns
   --------
   segments : list of segments
@@ -106,7 +132,7 @@ def img_seg_to_seg_objects(img_seg):
     if it[0] == 0:
       it.iternext()
       continue
-    
+
     segment_idx = it[0] - 1
     segment_coordinates[segment_idx].append(np.array(it.multi_index))
     it.iternext()
@@ -136,12 +162,15 @@ def image_overlay(img, overlay, mask = None):
   images_combined = 0.5 * (img + overlay)
   return np.where(mask, img, images_combined)
 
-def segments_to_geojson(segments):
+def segments_to_geojson(img_grayscale, segments):
   geojson_line_segments = []
+  idx = 0
   for seg in segments.itervalues():
     if seg.has_center_line == True:
-      center_line = zip(seg.center_line.x, seg.center_line.y)
-      feature = Feature(geometry = LineString(center_line))
+      center_line = zip(map(int, seg.center_line.x), map(int, seg.center_line.y))
+      img_values = map(lambda pt : int(img_grayscale[pt[1], pt[0]]), center_line)
+      feature = Feature(geometry = LineString(center_line), id = idx, properties = { "values": img_values })
       geojson_line_segments.append(feature)
+      idx = idx + 1
   geojson_line_segments = FeatureCollection(geojson_line_segments)
   return geojson_line_segments

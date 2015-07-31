@@ -37,7 +37,7 @@ def get_segments(in_file, out_file, intersections_file):
   timeStart("calculate segments")
   segments = get_segments(image, intersections)
   timeEnd("calculate segments")
-        
+
   save_segments_as_geojson(segments, out_file)
   timeEnd("get segments")
 

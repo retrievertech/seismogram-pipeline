@@ -27,7 +27,7 @@ def get_segments(image, intersections):
     amp_1, amp_2 = random_amplitude(), random_amplitude()
     offset = random_offset()
     line_array.append([ (x, offset + int(amp_1*math.sin(x * freq_1 + phase_1) + amp_2*math.sin(x * freq_2 + phase_2))) for x in range(shape[1]) ])
-  
+
   return line_array
 
 def save_segments_as_geojson(segments, filepath):

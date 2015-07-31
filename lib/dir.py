@@ -3,7 +3,7 @@
 import os
 
 def ensure_dir_exists(path):
-  try: 
+  try:
     os.makedirs(path)
   except OSError:
     if not os.path.isdir(path):

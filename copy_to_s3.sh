@@ -20,7 +20,7 @@ type=$4
 
 bucket_name=metadata
 
-if [ "$edited" == "edited" ]; then
+if [ "$edited" = "edited" ]; then
   bucket_name=edited-metadata
 fi
 

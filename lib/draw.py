@@ -57,7 +57,7 @@ def ellipse(cy, cx, yradius, xradius, shape=None):
     if shape is not None:
       # Constrain ymin and ymax by shape boundary
       upper_left = np.maximum(upper_left, np.array([0, 0]))
-      lower_right = np.minimum(lower_right, np.array(shape) - 1)
+      lower_right = np.minimum(lower_right, np.array(shape[:2]) - 1)
 
     # Shifted center is in interval [radiuses - 1, radiuses], so
     # the ellipse must fit in [0, 2*radiuses + 1].

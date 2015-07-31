@@ -1,7 +1,7 @@
 from timer import timeStart, timeEnd
+from lib.debug import Debug
 
 import numpy as np
-from scipy import misc
 from scipy.ndimage.morphology import binary_opening
 from skimage.filters import threshold_otsu
 from skimage.morphology import disk
@@ -14,7 +14,7 @@ from skimage.color import gray2rgb
 
 from line_intersection import seg_intersect
 from hough_lines import get_best_hough_lines
-from threshold_image import threshold_image
+from otsu_threshold_image import otsu_threshold_image
 
 import matplotlib.pyplot as plt
 import geojson
@@ -23,9 +23,9 @@ PARAMS = {
   "disk-size": lambda scale: int(17*scale)
 }
 
-def get_boundary(grayscale_image, scale=1, debug_dir=False):
+def get_boundary(grayscale_image, scale=1):
   timeStart("threshold image")
-  black_and_white_image = threshold_image(grayscale_image)
+  black_and_white_image = otsu_threshold_image(grayscale_image)
   timeEnd("threshold image")
 
   timeStart("morphological open image")
@@ -58,11 +58,10 @@ def get_boundary(grayscale_image, scale=1, debug_dir=False):
   region_of_interest_boundary[region_of_interest_mask] = 0
   timeEnd("mask region of interest")
 
-  if debug_dir:
-    misc.imsave(debug_dir+"/black_and_white_image.png", black_and_white_image)
-    misc.imsave(debug_dir+"/opened_image.png", opened_image)
-    misc.imsave(debug_dir+"/image_boundaries.png", image_boundaries)
-    misc.imsave(debug_dir+"/region_of_interest_boundary.png", region_of_interest_boundary)
+  Debug.save_image("roi", "black_and_white_image", black_and_white_image)
+  Debug.save_image("roi", "opened_image", opened_image)
+  Debug.save_image("roi", "image_boundaries", image_boundaries)
+  Debug.save_image("roi", "region_of_interest_boundary", region_of_interest_boundary)
 
   return region_of_interest_boundary
 
@@ -71,7 +70,7 @@ def get_hough_lines(image, min_angle, max_angle):
   min_separation_angle = 5
   return get_best_hough_lines(image, min_angle, max_angle, min_separation_distance, min_separation_angle)
 
-def get_box_lines(boundary, debug_dir = False, image = None):
+def get_box_lines(boundary, image = None):
   height, width = boundary.shape
   [half_width, half_height] = np.floor([0.5 * width, 0.5 * height]).astype(int)
 
@@ -99,18 +98,18 @@ def get_box_lines(boundary, debug_dir = False, image = None):
   print "found these hough lines:"
   print hough_lines
 
-  if debug_dir:
+  if Debug.active:
     image = gray2rgb(boundary)
     line_coords = [ skidraw.line(line[0][1], line[0][0], line[1][1], line[1][0]) for line in hough_lines.itervalues() ]
     for line in line_coords:
       rr, cc = line
       mask = (rr >= 0) & (rr < image.shape[0]) & (cc >= 0) & (cc < image.shape[1])
       image[rr[mask], cc[mask]] = [255, 0, 0]
-    misc.imsave(debug_dir+"/hough_lines.png", image)
+    Debug.save_image("roi", "hough_lines", image)
 
   return hough_lines
 
-def get_roi_corners(lines, debug_dir = False, image = None):
+def get_roi_corners(lines, image = None):
   timeStart("find intersections")
   corners = {
     "top_left": seg_intersect(lines["top"], lines["left"]),
@@ -123,14 +122,14 @@ def get_roi_corners(lines, debug_dir = False, image = None):
   corners = { corner_name: tuple(coord.astype(int)) for corner_name, coord in corners.iteritems() }
   timeEnd("find intersections")
 
-  if debug_dir:
+  if Debug.active:
     image_copy = np.copy(image)
     inner_circles = { corner_name: skidraw.circle(corner[1], corner[0], 10, shape=image.shape) for corner_name, corner in corners.iteritems() }
     outer_circles = { corner_name: skidraw.circle(corner[1], corner[0], 50, shape=image.shape) for corner_name, corner in corners.iteritems() }
     for corner_name in inner_circles:
       image_copy[outer_circles[corner_name]] = 0.0
       image_copy[inner_circles[corner_name]] = 1.0
-    misc.imsave(debug_dir+"/roi_corners.png", image_copy)
+    Debug.save_image("roi", "roi_corners", image_copy)
 
   return corners
 
