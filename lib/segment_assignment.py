@@ -86,12 +86,13 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
         elif dist == "null":
             stranded_segments.append(seg_count)
 
-        else:
+        """else:
             for seg2seg in seg_isin:
                 if meanline_database[which_meanline]["distances"][meanline_database[which_meanline]["segments"].index(seg2seg)] > dist:
                     meanline_database[which_meanline]["distances"].pop(meanline_database[which_meanline]["segments"].index(seg2seg))
                     meanline_database[which_meanline]["domain"].pop(meanline_database[which_meanline]["segments"].index(seg2seg))
                     stranded_segments.append(meanline_database[which_meanline]["segments"].pop(meanline_database[which_meanline]["segments"].index(seg2seg)))
+        """
         seg_count += 1
     """finds the average y of the segment, compares it to each meanline. assigns it to a meanline if it is less than
     dist pixels away."""
