@@ -72,16 +72,16 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   Debug.save_image("segments", "reverse_medial_axis", rmat)
 
   # maybe, instead of running medial_axis again, do nearest-neighbor interp
-  timeStart("skeletonize")
+  timeStart("get distance transform")
   _, rmat_dist = medial_axis(rmat, return_distance=True)
-  timeEnd("skeletonize")
+  timeEnd("get distance transform")
 
   timeStart("label segments")
   image_segments, num_segments = label(segments_bin, np.ones((3,3)))
   timeEnd("label segments")
 
   timeStart("watershed")
-  image_segments = watershed(-rmat_dist, image_segments, mask = rmat)
+  image_segments = watershed(-rmat_dist, image_segments, mask=rmat)
   timeEnd("watershed")
 
   print "found %s segments" % np.amax(image_segments)
@@ -124,10 +124,13 @@ def img_seg_to_seg_objects(img_seg):
   segments : list of segments
     A list containing all the trace segments.
   '''
+  
+  # segment_coordinates becomes a list of segments, where
+  # each segment is a list of all of its pixel coordinates
+  segment_coordinates = [[] for i in xrange(np.amax(img_seg))]
 
   timeStart("get segment coordinates")
   it = np.nditer(img_seg, flags=['multi_index'])
-  segment_coordinates = [[] for i in xrange(np.amax(img_seg))]
   while not it.finished:
     if it[0] == 0:
       it.iternext()

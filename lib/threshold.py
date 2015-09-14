@@ -235,12 +235,12 @@ def get_hist_and_background_count(img):
 def get_expected_background_pixel_counts(pixel_counts):
   peak_pixel_color = get_most_common_background_pixel_color(pixel_counts)
 
-  # Copy the histogram values from 0 -> peak into expected_background_counts
+  # Copy the histogram values from [0 -> peak] into expected_background_counts
   expected_background_counts = np.zeros((256))
   expected_background_counts[0:(peak_pixel_color + 1)] = pixel_counts[0:(peak_pixel_color + 1)]
 
-  # Reflect the histogram values from 0 -> peak and copy them
-  # into expected_background_counts[peak -> end]; this assumes the distribution
+  # Reflect the histogram values from [0 -> peak) and copy them
+  # into expected_background_counts[peak+1 -> 2*peak+1]; this assumes the distribution
   # of background pixel values is symmetrical about its peak
   if peak_pixel_color != 0:
     expected_background_counts[(peak_pixel_color + 1):(2 * peak_pixel_color + 1)] = pixel_counts[(peak_pixel_color - 1)::-1]

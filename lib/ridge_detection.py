@@ -105,7 +105,6 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
     Debug.save_image("ridges", "exclusion_layer-" + pad(i), exclusion_layer)
     exclusion[:,:,i] = exclusion_layer
 
-
   footprint_h = np.ones((3,1,3), dtype=bool)
   image_cube_h_norm = normalize(image_cube_h)
 
@@ -139,7 +138,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   image_cube_v_norm = normalize(image_cube_v)
   maxima_v = peak_local_max(image_cube_v_norm, indices=False, min_distance=1,
           threshold_rel=0, threshold_abs=0,
-          footprint = footprint_v)
+          footprint=footprint_v)
   maxima_v = maxima_v & (~exclusion) & (image_cube_v >= low_threshold)
   ridges_v = np.amax(maxima_v, axis=-1)
 
