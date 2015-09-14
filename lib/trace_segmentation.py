@@ -136,7 +136,7 @@ def img_seg_to_seg_objects(img_seg):
       it.iternext()
       continue
 
-    segment_idx = it[0] - 1
+    segment_idx = int(it[0] - 1)
     segment_coordinates[segment_idx].append(np.array(it.multi_index))
     it.iternext()
   timeEnd("get segment coordinates")
