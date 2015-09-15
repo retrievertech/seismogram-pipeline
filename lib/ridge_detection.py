@@ -67,8 +67,12 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   laplacian = gaussian_laplace(img, sigma=2)
   timeEnd("gaussian_laplace filter")
 
+  Debug.save_image("ridges", "gaussian_laplace", laplacian)
+
   # convex_pixels is an image of regions with positive second derivative
   convex_pixels = laplacian > convex_threshold
+
+  Debug.save_image("ridges", "convex_pixels", convex_pixels)
 
   timeStart("sobel filters x & y")
   abs_isobel = np.abs(ndimage.sobel(img, axis=0))
@@ -79,6 +83,9 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   vertical_slopes = abs_isobel > threshold_otsu(abs_isobel)
   horizontal_slopes = abs_jsobel > threshold_otsu(abs_jsobel)
   timeEnd("otsu thresholds x & y")
+
+  Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
+  Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
 
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
   timeStart("create gaussian image pyramid at %s scales" % num_scales)
@@ -98,11 +105,12 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("find horizontal ridges")
   exclusion_layer = dark_pixels | convex_pixels | horizontal_slopes
+  Debug.save_image("ridges", "horizontal_exclusion_layer_base", exclusion_layer)
   for i in range(num_scales):
     image_cube_h[:,:,i] = ((gaussian_blurs_h[i] - gaussian_blurs_h[i + 1]))
     # add to the exclusion layer all convex pixels in image_cube_h[:,:,i]
     exclusion_layer = (exclusion_layer | (image_cube_h[:,:,i] < -convex_threshold))
-    Debug.save_image("ridges", "exclusion_layer-" + pad(i), exclusion_layer)
+    Debug.save_image("ridges", "horizontal_exclusion_layer-" + pad(i), exclusion_layer)
     exclusion[:,:,i] = exclusion_layer
 
   footprint_h = np.ones((3,1,3), dtype=bool)
@@ -129,9 +137,12 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("find vertical ridges")
   exclusion_layer = dark_pixels | convex_pixels | vertical_slopes
+  Debug.save_image("ridges", "vertical_exclusion_layer_base", exclusion_layer)
   for i in range(num_scales):
     image_cube_v[:,:,i] = ((gaussian_blurs_v[i] - gaussian_blurs_v[i + 1]))
+    # add to the exclusion layer all convex pixels in image_cube_v[:,:,i]
     exclusion_layer = (exclusion_layer | (image_cube_v[:,:,i] < convex_threshold))
+    Debug.save_image("ridges", "vertical_exclusion_layer-" + pad(i), exclusion_layer)
     exclusion[:,:,i] = exclusion_layer
 
   footprint_v = np.ones((1,3,3), dtype=bool)
