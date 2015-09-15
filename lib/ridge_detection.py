@@ -25,35 +25,31 @@ from skimage.morphology import remove_small_objects
 
 from lib.utilities import normalize
 
-def ridge_region_vert(ridges, shape):
+def get_ridge_region_vert(ridges, shape):
   '''
-  ridges are tuples like (row, col, sigma, max_value)
-  ridge width is sqrt(2) * sigma
   '''
-  img = np.zeros(shape, dtype=float)
+  ridge_region = np.zeros(shape, dtype=float)
 
-  for r in ridges:
-    width = np.sqrt(2) * r[2]
-    #width = r[2]
-    lower_bound = max(0, round(r[1] - width))
-    upper_bound = min(shape[1]-1, round(r[1] + width))
-    img[r[0], lower_bound:upper_bound] = r[3]
-  return img
+  for row, col, sigma, max_value in ridges:
+    ridge_width = round(np.sqrt(2) * sigma)
+    bounds = np.array([col-ridge_width, col+ridge_width])
+    bounds = np.clip(bounds, 0, shape[1]-1)
+    ridge_region[row, bounds[0]:bounds[1]] = max_value
 
-def ridge_region_horiz(ridges, shape):
-  '''
-  ridges are tuples like (row, col, sigma, max_value)
-  ridge width is sqrt(2) * sigma
-  '''
-  img = np.zeros(shape, dtype=float)
+  return ridge_region
 
-  for r in ridges:
-    width = np.sqrt(2) * r[2]
-    #width = r[2]
-    lower_bound = max(0, round(r[0] - width))
-    upper_bound = min(shape[0]-1, round(r[0] + width))
-    img[lower_bound:upper_bound, r[1]] = r[3]
-  return img
+def get_ridge_region_horiz(ridges, shape):
+  '''
+  '''
+  ridge_region = np.zeros(shape, dtype=float)
+
+  for row, col, sigma, max_value in ridges:
+    ridge_width = round(np.sqrt(2) * sigma)
+    bounds = np.array([row-ridge_width, row+ridge_width])
+    bounds = np.clip(bounds, 0, shape[0]-1)
+    ridge_region[bounds[0]:bounds[1], col] = max_value
+
+  return ridge_region
 
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
@@ -176,7 +172,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   timeEnd("aggregate information about maxima of horizontal ridges")
 
   timeStart("prioritize horizontal regions")
-  horizontal_regions = ridge_region_horiz(maxima_h, img.shape)
+  horizontal_regions = get_ridge_region_horiz(maxima_h, img.shape)
   ridges_v = ridges_v & (horizontal_regions == 0)
   timeEnd("prioritize horizontal regions")
 
