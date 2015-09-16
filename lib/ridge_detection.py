@@ -92,6 +92,11 @@ def find_valid_maxima(image_cube, footprint, exclusion, low_threshold):
   
   return maxima & (~exclusion) & (image_cube >= low_threshold)
 
+def get_convex_pixels(img, convex_threshold):
+  laplacian = gaussian_laplace(img, sigma=2)
+  Debug.save_image("ridges", "gaussian_laplace", laplacian)
+  return laplacian > convex_threshold
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -99,16 +104,11 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   '''
 
   '''
-  #preliminaries
-  timeStart("gaussian_laplace filter")
-  laplacian = gaussian_laplace(img, sigma=2)
-  timeEnd("gaussian_laplace filter")
-
-  Debug.save_image("ridges", "gaussian_laplace", laplacian)
-
   # convex_pixels is an image of regions with positive second derivative
-  convex_pixels = laplacian > convex_threshold
-
+  timeStart("get convex pixels")
+  convex_pixels = get_convex_pixels(img, convex_threshold)
+  timeEnd("get convex pixels")
+  
   Debug.save_image("ridges", "convex_pixels", convex_pixels)
 
   timeStart("get slopes")
