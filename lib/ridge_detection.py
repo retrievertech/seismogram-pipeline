@@ -110,21 +110,6 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   '''
 
   '''
-  # convex_pixels is an image of regions with positive second derivative
-  timeStart("get convex pixels")
-  convex_pixels = get_convex_pixels(img, convex_threshold)
-  timeEnd("get convex pixels")
-  
-  Debug.save_image("ridges", "convex_pixels", convex_pixels)
-
-  timeStart("get slopes")
-  vertical_slopes = get_slopes(img, axis=0)
-  horizontal_slopes = get_slopes(img, axis=1)
-  timeEnd("get slopes")
-
-  Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
-  Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
-
   # number of scales at which to compute a difference of gaussians
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
 
@@ -132,12 +117,25 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   sigma_list = np.array([min_sigma * (sigma_ratio ** i)
               for i in range(num_scales + 1)])
 
-  timeStart("create difference of gaussian image cubes at %s scales" % num_scales)
-  image_cube_h = create_image_cube(img, sigma_list, axis=0)
-  image_cube_v = create_image_cube(img, sigma_list, axis=1)
-  timeEnd("create difference of gaussian image cubes at %s scales" % num_scales)
+  # convex_pixels is an image of regions with positive second derivative
+  timeStart("get convex pixels")
+  convex_pixels = get_convex_pixels(img, convex_threshold)
+  timeEnd("get convex pixels")
+  
+  Debug.save_image("ridges", "convex_pixels", convex_pixels)
 
   timeStart("find horizontal ridges")
+
+  timeStart("get slopes")
+  horizontal_slopes = get_slopes(img, axis=1)
+  timeEnd("get slopes")
+
+  Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
+
+  timeStart("create difference of gaussian image cube at %s scales" % num_scales)
+  image_cube_h = create_image_cube(img, sigma_list, axis=0)
+  timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
+
   exclusion = create_exclusion_cube(image_cube_h, dark_pixels, convex_pixels,
                                     horizontal_slopes, convex_threshold)
 
@@ -157,6 +155,17 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   timeEnd("find horizontal ridges")
 
   timeStart("find vertical ridges")
+
+  timeStart("get slopes")
+  vertical_slopes = get_slopes(img, axis=0)
+  timeEnd("get slopes")
+
+  Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
+
+  timeStart("create difference of gaussian image cube at %s scales" % num_scales)
+  image_cube_v = create_image_cube(img, sigma_list, axis=1)
+  timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
+
   exclusion = create_exclusion_cube(image_cube_v, dark_pixels, convex_pixels,
                                     vertical_slopes, convex_threshold)
 
