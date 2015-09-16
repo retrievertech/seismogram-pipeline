@@ -55,6 +55,14 @@ def get_slopes(img, axis):
   abs_sobel = np.abs(ndimage.sobel(img, axis=axis))
   return abs_sobel > threshold_otsu(abs_sobel)
 
+def create_image_cube(img, sigma_list, axis):
+  gaussian_blurs = [gaussian_filter1d(img, s, axis=axis) for s in sigma_list]
+  num_scales = len(gaussian_blurs) - 1
+  image_cube = np.zeros((img.shape[0], img.shape[1], num_scales))
+  for i in range(num_scales):
+    image_cube[:,:,i] = ((gaussian_blurs[i] - gaussian_blurs[i + 1]))
+  return image_cube
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -83,19 +91,15 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
 
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
-  timeStart("create gaussian image pyramid at %s scales" % num_scales)
+
   # a geometric progression of standard deviations for gaussian kernels
   sigma_list = np.array([min_sigma * (sigma_ratio ** i)
               for i in range(num_scales + 1)])
 
-  gaussian_blurs_h = [gaussian_filter1d(img, s, 0) \
-            for s in sigma_list]
-  gaussian_blurs_v = [gaussian_filter1d(img, s, 1) \
-            for s in sigma_list]
-  timeEnd("create gaussian image pyramid at %s scales" % num_scales)
-
-  image_cube_h = np.zeros((img.shape[0], img.shape[1], num_scales))
-  image_cube_v = np.zeros((img.shape[0], img.shape[1], num_scales))
+  timeStart("create difference of gaussian image cubes at %s scales" % num_scales)
+  image_cube_h = create_image_cube(img, sigma_list, axis=0)
+  image_cube_v = create_image_cube(img, sigma_list, axis=1)
+  timeEnd("create difference of gaussian image cubes at %s scales" % num_scales)
   exclusion = np.zeros((img.shape[0], img.shape[1], num_scales), dtype=bool)
 
   timeStart("find horizontal ridges")
