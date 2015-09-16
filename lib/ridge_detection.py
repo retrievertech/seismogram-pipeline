@@ -61,6 +61,7 @@ def create_image_cube(img, sigma_list, axis):
   image_cube = np.zeros((img.shape[0], img.shape[1], num_scales))
   for i in range(num_scales):
     image_cube[:,:,i] = ((gaussian_blurs[i] - gaussian_blurs[i + 1]))
+    Debug.save_image("ridges", "image_cube-" + pad(i), image_cube[:,:,i])
   return image_cube
 
 def create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
