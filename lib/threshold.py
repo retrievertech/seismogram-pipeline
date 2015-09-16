@@ -17,7 +17,7 @@ from mitchells_best_candidate import best_candidate_sample
 def threshold(img, threshold_function, num_blocks, block_dims = None,
         smoothing = 0.003):
   '''
-  Get a smoothly varing threshold from an image by applying the threshold
+  Get a smoothly varying threshold from an image by applying the threshold
   function to multiple randomly positioned blocks of the image and using
   a 2-D smoothing spline to set the threshold across the image.
 
@@ -85,15 +85,20 @@ def threshold(img, threshold_function, num_blocks, block_dims = None,
   # Maybe consider using lower-order spline for large images
   # (if large indices create problems for cubic functions)
   fit = spline2d(points[:,0], points[:,1], thresholds,
-           bbox = [0, img_dims[0], 0, img_dims[1]],
-           kx = spline_order, ky = spline_order,
-           s = num_blocks * smoothing)
+                 bbox = [0, img_dims[0], 0, img_dims[1]],
+                 kx = spline_order, ky = spline_order,
+                 s = num_blocks * smoothing)
   th_new = fit(x = np.arange(img_dims[0]), y = np.arange(img_dims[1]))
   th_new = fix_border(th_new, points)
   timeEnd("fit 2-D spline")
   return th_new
 
 def debug_blocks(img, points, block_dims, threshold_function):
+  '''
+  To be used for debugging. Saves images of blocks that throw errors,
+  and an additional image showing how the blocks are distributed.
+  
+  '''
   from debug import Debug
   from skimage.draw import line, circle
   from skimage.color import gray2rgb
