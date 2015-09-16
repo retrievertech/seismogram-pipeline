@@ -83,6 +83,12 @@ def create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
   return exclusion_cube
 
 def find_valid_maxima(image_cube, footprint, exclusion, low_threshold):
+  '''
+  Returns a 3D array that is true everywhere that image_cube
+  has a local maxima except in regions marked for exclusion.
+
+  '''
+
   # peak_local_max expects a normalized image (values between 0 and 1)
   normalized_image_cube = normalize(image_cube)
 
@@ -137,9 +143,6 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   footprint_h = np.ones((3,1,3), dtype=bool)
 
-  # maxima_h is a 3D array that is true everywhere
-  # that image_cube_h has a local maxima except in
-  # regions marked for exclusion
   maxima_h = find_valid_maxima(image_cube_h, footprint_h, exclusion, low_threshold)
 
   # ridges_h is a 2D array that is true everywhere
