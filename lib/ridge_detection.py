@@ -103,6 +103,41 @@ def get_convex_pixels(img, convex_threshold):
   Debug.save_image("ridges", "gaussian_laplace", laplacian)
   return laplacian > convex_threshold
 
+def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
+                       convex_pixels, sigma_list, convex_threshold, low_threshold):
+  num_scales = len(sigma_list) - 1
+
+  timeStart("get slopes")
+  slopes = get_slopes(img, axis=sobel_axis)
+  timeEnd("get slopes")
+
+  Debug.save_image("ridges", "slopes", slopes)
+
+  timeStart("create difference of gaussian image cube at %s scales" % num_scales)
+  image_cube = create_image_cube(img, sigma_list, axis=dog_axis)
+  timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
+
+  timeStart("create exclusion cube")
+  exclusion = create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
+                                    slopes, convex_threshold)
+  timeEnd("create exclusion cube")
+
+  timeStart("find valid maxima")
+  maxima = find_valid_maxima(image_cube, footprint, exclusion, low_threshold)
+  timeEnd("find valid maxima")
+
+  # ridges is a 2D array that is true everywhere
+  # that maxima has at least one true value in any scale
+  ridges = np.amax(maxima, axis=-1)
+
+  image_cube = np.where(maxima, image_cube, 0)
+  # the same as:
+  # image_cube_h[~maxima_h] = 0
+
+  max_values = np.amax(image_cube, axis=-1)
+
+  return ridges, image_cube, max_values
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -126,58 +161,26 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("find horizontal ridges")
 
-  timeStart("get slopes")
-  horizontal_slopes = get_slopes(img, axis=1)
-  timeEnd("get slopes")
-
-  Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
-
-  timeStart("create difference of gaussian image cube at %s scales" % num_scales)
-  image_cube_h = create_image_cube(img, sigma_list, axis=0)
-  timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
-
-  exclusion = create_exclusion_cube(image_cube_h, dark_pixels, convex_pixels,
-                                    horizontal_slopes, convex_threshold)
-
   footprint_h = np.ones((3,1,3), dtype=bool)
 
-  maxima_h = find_valid_maxima(image_cube_h, footprint_h, exclusion, low_threshold)
+  ridges_h, image_cube_h, max_values_h = \
+      extract_ridge_data(img, sobel_axis=1, dog_axis=0,
+                         footprint=footprint_h, dark_pixels=dark_pixels,
+                         convex_pixels=convex_pixels, sigma_list=sigma_list,
+                         convex_threshold=convex_threshold, low_threshold=low_threshold)
 
-  # ridges_h is a 2D array that is true everywhere
-  # that maxima_h has at least one true value in any scale
-  ridges_h = np.amax(maxima_h, axis=-1)
-
-  image_cube_h = np.where(maxima_h, image_cube_h, 0)
-  # the same as:
-  # image_cube_h[~maxima_h] = 0
-
-  max_values_h = np.amax(image_cube_h, axis=-1)
   timeEnd("find horizontal ridges")
 
   timeStart("find vertical ridges")
 
-  timeStart("get slopes")
-  vertical_slopes = get_slopes(img, axis=0)
-  timeEnd("get slopes")
-
-  Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
-
-  timeStart("create difference of gaussian image cube at %s scales" % num_scales)
-  image_cube_v = create_image_cube(img, sigma_list, axis=1)
-  timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
-
-  exclusion = create_exclusion_cube(image_cube_v, dark_pixels, convex_pixels,
-                                    vertical_slopes, convex_threshold)
-
   footprint_v = np.ones((1,3,3), dtype=bool)
 
-  maxima_v = find_valid_maxima(image_cube_v, footprint_v, exclusion, low_threshold)
-  
-  ridges_v = np.amax(maxima_v, axis=-1)
+  ridges_v, image_cube_v, max_values_v = \
+      extract_ridge_data(img, sobel_axis=0, dog_axis=1,
+                         footprint=footprint_v, dark_pixels=dark_pixels,
+                         convex_pixels=convex_pixels, sigma_list=sigma_list,
+                         convex_threshold=convex_threshold, low_threshold=low_threshold)
 
-  image_cube_v = np.where(maxima_v, image_cube_v, 0)
-
-  max_values_v = np.amax(image_cube_v, axis = -1)
   timeEnd("find vertical ridges")
 
   # Horiztonal ridges need to be prominent
