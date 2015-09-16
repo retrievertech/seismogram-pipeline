@@ -51,6 +51,10 @@ def get_ridge_region_horiz(ridges, shape):
 
   return ridge_region
 
+def get_slopes(img, axis):
+  abs_sobel = np.abs(ndimage.sobel(img, axis=axis))
+  return abs_sobel > threshold_otsu(abs_sobel)
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -70,15 +74,10 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   Debug.save_image("ridges", "convex_pixels", convex_pixels)
 
-  timeStart("sobel filters x & y")
-  abs_isobel = np.abs(ndimage.sobel(img, axis=0))
-  abs_jsobel = np.abs(ndimage.sobel(img, axis=1))
-  timeEnd("sobel filters x & y")
-
-  timeStart("otsu thresholds x & y")
-  vertical_slopes = abs_isobel > threshold_otsu(abs_isobel)
-  horizontal_slopes = abs_jsobel > threshold_otsu(abs_jsobel)
-  timeEnd("otsu thresholds x & y")
+  timeStart("get slopes")
+  vertical_slopes = get_slopes(img, axis=0)
+  horizontal_slopes = get_slopes(img, axis=1)
+  timeEnd("get slopes")
 
   Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
   Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
@@ -137,7 +136,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   for i in range(num_scales):
     image_cube_v[:,:,i] = ((gaussian_blurs_v[i] - gaussian_blurs_v[i + 1]))
     # add to the exclusion layer all convex pixels in image_cube_v[:,:,i]
-    exclusion_layer = (exclusion_layer | (image_cube_v[:,:,i] < convex_threshold))
+    exclusion_layer = (exclusion_layer | (image_cube_v[:,:,i] < -convex_threshold))
     Debug.save_image("ridges", "vertical_exclusion_layer-" + pad(i), exclusion_layer)
     exclusion[:,:,i] = exclusion_layer
 
