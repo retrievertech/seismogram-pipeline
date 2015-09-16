@@ -82,6 +82,16 @@ def create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
 
   return exclusion_cube
 
+def find_valid_maxima(image_cube, footprint, exclusion, low_threshold):
+  # peak_local_max expects a normalized image (values between 0 and 1)
+  normalized_image_cube = normalize(image_cube)
+
+  maxima = peak_local_max(normalized_image_cube, indices=False, min_distance=1,
+                          threshold_rel=0, threshold_abs=0, exclude_border=True,
+                          footprint=footprint)
+  
+  return maxima & (~exclusion) & (image_cube >= low_threshold)
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -109,6 +119,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   Debug.save_image("ridges", "vertical_slopes", vertical_slopes)
   Debug.save_image("ridges", "horizontal_slopes", horizontal_slopes)
 
+  # number of scales at which to compute a difference of gaussians
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
 
   # a geometric progression of standard deviations for gaussian kernels
@@ -125,17 +136,14 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
                                     horizontal_slopes, convex_threshold)
 
   footprint_h = np.ones((3,1,3), dtype=bool)
-  image_cube_h_norm = normalize(image_cube_h)
 
-  # maxima_h is a boolean array
-  maxima_h = peak_local_max(image_cube_h_norm, indices=False, min_distance=1,
-          threshold_rel=0, threshold_abs=0, exclude_border=False,
-          footprint=footprint_h)
-  maxima_h = maxima_h & (~exclusion) & (image_cube_h >= low_threshold)
+  # maxima_h is a 3D array that is true everywhere
+  # that image_cube_h has a local maxima except in
+  # regions marked for exclusion
+  maxima_h = find_valid_maxima(image_cube_h, footprint_h, exclusion, low_threshold)
 
-
-  # ridges_h is a 2D array that is true everywhere that
-  # that maxima_h has at least one true value across all scales
+  # ridges_h is a 2D array that is true everywhere
+  # that maxima_h has at least one true value in any scale
   ridges_h = np.amax(maxima_h, axis=-1)
 
   image_cube_h = np.where(maxima_h, image_cube_h, 0)
@@ -150,14 +158,13 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
                                     vertical_slopes, convex_threshold)
 
   footprint_v = np.ones((1,3,3), dtype=bool)
-  image_cube_v_norm = normalize(image_cube_v)
-  maxima_v = peak_local_max(image_cube_v_norm, indices=False, min_distance=1,
-          threshold_rel=0, threshold_abs=0,
-          footprint=footprint_v)
-  maxima_v = maxima_v & (~exclusion) & (image_cube_v >= low_threshold)
+
+  maxima_v = find_valid_maxima(image_cube_v, footprint_v, exclusion, low_threshold)
+  
   ridges_v = np.amax(maxima_v, axis=-1)
 
   image_cube_v = np.where(maxima_v, image_cube_v, 0)
+
   max_values_v = np.amax(image_cube_v, axis = -1)
   timeEnd("find vertical ridges")
 
