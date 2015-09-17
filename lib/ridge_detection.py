@@ -64,8 +64,14 @@ def create_image_cube(img, sigma_list, axis):
     Debug.save_image("ridges", "image_cube-" + pad(i), image_cube[:,:,i])
   return image_cube
 
-def create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
-                          slopes, convex_threshold):
+def create_exclusion_cube(img, image_cube, dark_pixels, convex_pixels,
+                          axis, convex_threshold):
+
+  timeStart("get slopes")
+  slopes = get_slopes(img, axis=axis)
+  timeEnd("get slopes")
+
+  Debug.save_image("ridges", "slopes", slopes)
 
   exclusion_cube = np.zeros(image_cube.shape, dtype=bool)
   exclusion_cube[:,:,0] = dark_pixels | convex_pixels | slopes \
@@ -106,29 +112,40 @@ def get_convex_pixels(img, convex_threshold):
 
 def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
                        convex_pixels, sigma_list, convex_threshold, low_threshold):
+  '''
+  Returns
+  -------
+  ridges : 2D boolean array
+    True at every pixel considered to be a ridge.
+  max_values : 2D float array
+    The maximum values across all sigma scales of image_cube.
+  max_scales : 2D int array
+    The scales at which the image_cube took on those maximum values.
+
+  '''
   num_scales = len(sigma_list) - 1
-
-  timeStart("get slopes")
-  slopes = get_slopes(img, axis=sobel_axis)
-  timeEnd("get slopes")
-
-  Debug.save_image("ridges", "slopes", slopes)
 
   timeStart("create difference of gaussian image cube at %s scales" % num_scales)
   image_cube = create_image_cube(img, sigma_list, axis=dog_axis)
   timeEnd("create difference of gaussian image cube at %s scales" % num_scales)
 
   timeStart("create exclusion cube")
-  exclusion = create_exclusion_cube(image_cube, dark_pixels, convex_pixels,
-                                    slopes, convex_threshold)
+  exclusion = create_exclusion_cube(img,
+                                    image_cube=image_cube,
+                                    dark_pixels=dark_pixels,
+                                    convex_pixels=convex_pixels,
+                                    axis=sobel_axis,
+                                    convex_threshold=convex_threshold)
   timeEnd("create exclusion cube")
 
-  timeStart("find valid maxima")
+  timeStart("find image cube maxima")
   maxima = find_valid_maxima(image_cube, footprint, exclusion, low_threshold)
-  timeEnd("find valid maxima")
+  timeEnd("find image cube maxima")
 
   # set all non-maxima points in image_cube to 0
+  timeStart("suppress non-maxima")
   image_cube[~maxima] = 0
+  timeEnd("suppress non-maxima")
 
   timeStart("collapse cubes")
   # ridges is a 2D array that is true everywhere
