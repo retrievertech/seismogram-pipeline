@@ -163,6 +163,8 @@ def compile_ridge_data(sigmas_h, ridges_h, max_values_h):
   max_values_h = max_values_h[ridges_h][:,np.newaxis]
   return np.hstack((indices_h, sigmas_h, max_values_h))
 
+def create_sigma_list(min_sigma, sigma_ratio, scales):
+  return min_sigma * np.power(sigma_ratio, scales)
 
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
@@ -175,8 +177,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
 
   # a geometric progression of standard deviations for gaussian kernels
-  sigma_list = np.array([min_sigma * (sigma_ratio ** i)
-              for i in range(num_scales + 1)])
+  sigma_list = create_sigma_list(min_sigma, sigma_ratio, np.arange(num_scales + 1))
 
   # convex_pixels is an image of regions with positive second derivative
   timeStart("get convex pixels")
@@ -212,7 +213,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
                          connectivity = 2)))
 
   timeStart("aggregate information about maxima of horizontal ridges")
-  sigmas_h = min_sigma * np.power(sigma_ratio, max_scales_h)
+  sigmas_h = create_sigma_list(min_sigma, sigma_ratio, max_scales_h)
   ridge_data_h = compile_ridge_data(sigmas_h, ridges_h, max_values_h)
   timeEnd("aggregate information about maxima of horizontal ridges")
 
@@ -228,6 +229,6 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
     return (ridges_h, ridges_v)
   else:
     # Aggregate information about maxima of vertical ridges
-    sigmas_v = min_sigma * np.power(sigma_ratio, max_scales_v)
+    sigmas_v = create_sigma_list(min_sigma, sigma_ratio, max_scales_v)
     ridge_data_v = compile_ridge_data(sigmas_v, ridges_v, max_values_v)
     return (ridge_data_h, ridge_data_v)
