@@ -157,6 +157,12 @@ def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
 
   return ridges, max_values, max_scales
 
+def compile_ridge_data(sigmas_h, ridges_h, max_values_h):
+  indices_h = np.argwhere(ridges_h)
+  sigmas_h = sigmas_h[ridges_h]
+  max_values_h = max_values_h[ridges_h]
+  return np.hstack((indices_h, sigmas_h[:,np.newaxis], max_values_h[:,np.newaxis]))
+
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
@@ -206,15 +212,11 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("aggregate information about maxima of horizontal ridges")
   sigmas_h = min_sigma * np.power(sigma_ratio, max_scales_h)
-  indices_h = np.argwhere(ridges_h)
-  sigmas_h = sigmas_h[ridges_h]
-  max_values_h = max_values_h[ridges_h]
-  maxima_h = np.hstack((indices_h, sigmas_h[:,np.newaxis],
-              max_values_h[:,np.newaxis]))
+  ridge_data_h = compile_ridge_data(sigmas_h, ridges_h, max_values_h)
   timeEnd("aggregate information about maxima of horizontal ridges")
 
   timeStart("prioritize horizontal regions")
-  horizontal_regions = get_ridge_region_horiz(maxima_h, img.shape)
+  horizontal_regions = get_ridge_region_horiz(ridge_data_h, img.shape)
   ridges_v = ridges_v & (horizontal_regions == 0)
   timeEnd("prioritize horizontal regions")
 
@@ -226,9 +228,5 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   else:
     # Aggregate information about maxima of vertical ridges
     sigmas_v = min_sigma * np.power(sigma_ratio, max_scales_v)
-    indices_v = np.argwhere(ridges_v)
-    sigmas_v = sigmas_v[ridges_v]
-    max_values_v = max_values_v[ridges_v]
-    maxima_v = np.hstack((indices_v, sigmas_v[:,np.newaxis],
-                max_values_v[:,np.newaxis]))
-    return (maxima_h, maxima_v)
+    ridge_data_v = compile_ridge_data(sigmas_v, ridges_v, max_values_v)
+    return (ridge_data_h, ridge_data_v)
