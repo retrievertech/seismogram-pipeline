@@ -159,9 +159,10 @@ def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
 
 def compile_ridge_data(sigmas_h, ridges_h, max_values_h):
   indices_h = np.argwhere(ridges_h)
-  sigmas_h = sigmas_h[ridges_h]
-  max_values_h = max_values_h[ridges_h]
-  return np.hstack((indices_h, sigmas_h[:,np.newaxis], max_values_h[:,np.newaxis]))
+  sigmas_h = sigmas_h[ridges_h][:,np.newaxis]
+  max_values_h = max_values_h[ridges_h][:,np.newaxis]
+  return np.hstack((indices_h, sigmas_h, max_values_h))
+
 
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
