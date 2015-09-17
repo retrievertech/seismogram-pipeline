@@ -127,15 +127,15 @@ def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
   maxima = find_valid_maxima(image_cube, footprint, exclusion, low_threshold)
   timeEnd("find valid maxima")
 
+  # set all non-maxima points in image_cube to 0
+  image_cube[~maxima] = 0
+
+  timeStart("collapse cubes")
   # ridges is a 2D array that is true everywhere
   # that maxima has at least one true value in any scale
   ridges = np.amax(maxima, axis=-1)
-
-  image_cube = np.where(maxima, image_cube, 0)
-  # the same as:
-  # image_cube_h[~maxima_h] = 0
-
   max_values = np.amax(image_cube, axis=-1)
+  timeEnd("collapse cubes")
 
   return ridges, image_cube, max_values
 
