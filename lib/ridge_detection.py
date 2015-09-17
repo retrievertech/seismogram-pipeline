@@ -152,9 +152,10 @@ def extract_ridge_data(img, sobel_axis, dog_axis, footprint, dark_pixels,
   # that maxima has at least one true value in any scale
   ridges = np.amax(maxima, axis=-1)
   max_values = np.amax(image_cube, axis=-1)
+  max_scales = np.argmax(image_cube, axis=-1)
   timeEnd("collapse cubes")
 
-  return ridges, image_cube, max_values
+  return ridges, max_values, max_scales
 
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             sigma_ratio = 1.6, min_ridge_length = 15,
@@ -179,7 +180,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("find horizontal ridges")
   footprint_h = np.ones((3,1,3), dtype=bool)
-  ridges_h, image_cube_h, max_values_h = \
+  ridges_h, max_values_h, max_scales_h = \
       extract_ridge_data(img, sobel_axis=1, dog_axis=0,
                          footprint=footprint_h, dark_pixels=dark_pixels,
                          convex_pixels=convex_pixels, sigma_list=sigma_list,
@@ -188,7 +189,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
 
   timeStart("find vertical ridges")
   footprint_v = np.ones((1,3,3), dtype=bool)
-  ridges_v, image_cube_v, max_values_v = \
+  ridges_v, max_values_v, max_scales_v = \
       extract_ridge_data(img, sobel_axis=0, dog_axis=1,
                          footprint=footprint_v, dark_pixels=dark_pixels,
                          convex_pixels=convex_pixels, sigma_list=sigma_list,
@@ -204,8 +205,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
                          connectivity = 2)))
 
   timeStart("aggregate information about maxima of horizontal ridges")
-  sigmas_h = np.argmax(image_cube_h, axis=-1)
-  sigmas_h = min_sigma * np.power(sigma_ratio, sigmas_h)
+  sigmas_h = min_sigma * np.power(sigma_ratio, max_scales_h)
   indices_h = np.argwhere(ridges_h)
   sigmas_h = sigmas_h[ridges_h]
   max_values_h = max_values_h[ridges_h]
@@ -225,8 +225,7 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
     return (ridges_h, ridges_v)
   else:
     # Aggregate information about maxima of vertical ridges
-    sigmas_v = np.argmax(image_cube_v, axis=-1)
-    sigmas_v = min_sigma * np.power(sigma_ratio, sigmas_v)
+    sigmas_v = min_sigma * np.power(sigma_ratio, max_scales_v)
     indices_v = np.argwhere(ridges_v)
     sigmas_v = sigmas_v[ridges_v]
     max_values_v = max_values_v[ridges_v]
