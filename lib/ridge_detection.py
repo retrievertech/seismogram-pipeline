@@ -178,30 +178,24 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   Debug.save_image("ridges", "convex_pixels", convex_pixels)
 
   timeStart("find horizontal ridges")
-
   footprint_h = np.ones((3,1,3), dtype=bool)
-
   ridges_h, image_cube_h, max_values_h = \
       extract_ridge_data(img, sobel_axis=1, dog_axis=0,
                          footprint=footprint_h, dark_pixels=dark_pixels,
                          convex_pixels=convex_pixels, sigma_list=sigma_list,
                          convex_threshold=convex_threshold, low_threshold=low_threshold)
-
   timeEnd("find horizontal ridges")
 
   timeStart("find vertical ridges")
-
   footprint_v = np.ones((1,3,3), dtype=bool)
-
   ridges_v, image_cube_v, max_values_v = \
       extract_ridge_data(img, sobel_axis=0, dog_axis=1,
                          footprint=footprint_v, dark_pixels=dark_pixels,
                          convex_pixels=convex_pixels, sigma_list=sigma_list,
                          convex_threshold=convex_threshold, low_threshold=low_threshold)
-
   timeEnd("find vertical ridges")
 
-  # Horiztonal ridges need to be prominent
+  # Horizontal ridges need to be prominent
   ridges_h = ridges_h & (max_values_h >= high_threshold)
 
   # Vertical ridges need to either be prominent or highly connected
