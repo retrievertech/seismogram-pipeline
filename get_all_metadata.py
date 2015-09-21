@@ -100,6 +100,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   Debug.save_image("main", "flattened_background", img_dark_removed)
 
+  masked_image = None
 
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")
@@ -114,6 +115,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
                markers_background=background)
   timeEnd("get binary image")
 
+  img_dark_removed = None
+  background = None
 
   print "\n--SKELETONIZE--"
   timeStart("get medial axis skeleton and distance transform")
