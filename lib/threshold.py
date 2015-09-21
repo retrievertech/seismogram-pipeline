@@ -409,7 +409,7 @@ def foreground_threshold(img, prob_foreground = 0.99, num_blocks = None,
                    smoothing=0.003)
 
 def flatten_background(img, prob_background = 1, num_blocks = None,
-             block_dims = None, return_background = False, debug_dir = None):
+             block_dims = None, return_background = False, img_gray = None):
   '''
   Finds the pixel intensity at every location in the image below which the
   pixel is likely part of the dark background. Pixels darker than this
