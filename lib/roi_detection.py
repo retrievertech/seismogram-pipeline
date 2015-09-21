@@ -109,7 +109,7 @@ def get_box_lines(boundary, image = None):
 
   return hough_lines
 
-def get_roi_corners(lines, image = None):
+def get_corners(lines, image = None):
   timeStart("find intersections")
   corners = {
     "top_left": seg_intersect(lines["top"], lines["left"]),
@@ -131,6 +131,12 @@ def get_roi_corners(lines, image = None):
       image_copy[inner_circles[corner_name]] = 1.0
     Debug.save_image("roi", "roi_corners", image_copy)
 
+  return corners
+
+def get_roi(image, scale):
+  boundary = get_boundary(image, scale=scale)
+  lines = get_box_lines(boundary, image=image)
+  corners = get_corners(lines, image=image)
   return corners
 
 def corners_to_geojson(corners):

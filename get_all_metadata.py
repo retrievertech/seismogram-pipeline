@@ -32,7 +32,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
   from lib.load_image import get_grayscale_image, get_image_as_float
   from skimage.morphology import medial_axis
-  from lib.roi_detection import get_boundary, get_box_lines, get_roi_corners, corners_to_geojson
+  from lib.roi_detection import get_roi, corners_to_geojson
   from lib.polygon_mask import mask_image
   from lib.meanline_detection import detect_meanlines, meanlines_to_geojson
   from lib.threshold import flatten_background
@@ -57,12 +57,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   img_gray = get_image_as_float(img_grayscale)
   timeEnd("read image")
 
-
   print "\n--ROI--"
   timeStart("get region of interest")
-  boundary = get_boundary(img_gray, scale=scale)
-  lines = get_box_lines(boundary, image=img_gray)
-  corners = get_roi_corners(lines, image=img_gray)
+  corners = get_roi(img_gray, scale=scale)
   timeEnd("get region of interest")
 
   timeStart("convert roi to geojson")
