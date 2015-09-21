@@ -8,7 +8,7 @@ Created on Tue Feb 17 11:54:50 2015
 import numpy as np
 from skimage.draw import circle
 from scipy.stats import percentileofscore
-from threshold import make_background_thresh_fun
+# from threshold import make_background_thresh_fun
 
 def normalize(a):
   '''
@@ -42,13 +42,13 @@ def noise_boundaries(a, perc_back):
   noise_boundaries = 4 * np.asarray(dispersion)
   return noise_boundaries
 
-def gray_to_photon_count(image_gray, B_max = 1.01, B_min = 0):
-  if B_min == 0:
-    B_min = make_background_thresh_fun()(image_gray)
-  image_gray = np.maximum(image_gray, B_min)
-  image_photons = np.log(B_max - B_min) - np.log(B_max - image_gray)
-  image_photons = normalize(image_photons)
-  return image_photons
+# def gray_to_photon_count(image_gray, B_max = 1.01, B_min = 0):
+#   if B_min == 0:
+#     B_min = make_background_thresh_fun()(image_gray)
+#   image_gray = np.maximum(image_gray, B_min)
+#   image_photons = np.log(B_max - B_min) - np.log(B_max - image_gray)
+#   image_photons = normalize(image_photons)
+#   return image_photons
 
 def mark_coords(shape, coords):
   markers = np.zeros(shape, dtype=bool)
