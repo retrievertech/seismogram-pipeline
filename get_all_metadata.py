@@ -37,7 +37,7 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
   from lib.meanline_detection import detect_meanlines, meanlines_to_geojson
   from lib.threshold import flatten_background
   from lib.ridge_detection import find_ridges
-  from lib.binarization import local_min, binary_image
+  from lib.binarization import binary_image
   from lib.intersection_detection import find_intersections
   from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features
@@ -94,16 +94,15 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False):
 
 
   print "\n--FLATTEN BACKGROUND--"
-  img_dark_removed, dark_pixels = \
+  img_dark_removed, background = \
     flatten_background(masked_image, prob_background=0.95,
-                       return_background=True, debug_dir=debug_dir)
+                       return_background=True, img_gray=img_gray)
 
   Debug.save_image("main", "flattened_background", img_dark_removed)
 
 
   print "\n--RIDGES--"
   timeStart("get horizontal and vertical ridges")
-  background = dark_pixels | local_min(img_gray) | masked_image.mask
   ridges_h, ridges_v = find_ridges(img_dark_removed, background)
   ridges = ridges_h | ridges_v
   timeEnd("get horizontal and vertical ridges")

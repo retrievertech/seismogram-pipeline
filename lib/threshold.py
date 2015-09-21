@@ -6,6 +6,7 @@ Created on Fri Feb 13 13:05:12 2015
 """
 
 from lib.timer import timeStart, timeEnd
+from lib.debug import Debug
 
 import numpy as np
 from scipy.interpolate import SmoothBivariateSpline as spline2d
@@ -13,6 +14,8 @@ from scipy.ndimage import distance_transform_edt
 from skimage.morphology import (convex_hull_image)
 from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
+from utilities import local_min
+
 
 def threshold(img, threshold_function, num_blocks, block_dims = None,
         smoothing = 0.003):
@@ -449,13 +452,43 @@ def flatten_background(img, prob_background = 1, num_blocks = None,
                                block_dims, smoothing=0.003)
   timeEnd("calculate background threshold with %s blocks" % num_blocks)
 
-  timeStart("select background pixels")
-  background = img < background_level
-  timeEnd("select background pixels")
+  timeStart("select dark pixels")
+  dark_pixels = img < background_level
+  timeEnd("select dark pixels")
 
-  timeStart("raise background pixels")
-  flattened = np.where(background, background_level, img)
-  timeEnd("raise background pixels")
+  timeStart("raise dark pixels")
+  flattened = np.where(dark_pixels, background_level, img)
+  timeEnd("raise dark pixels")
+
+  local_min_gray = local_min(img_gray)
+  Debug.save_image("threshold", "local_min_gray", local_min_gray)
+
+  timeStart("union dark pixels, minima, and mask regions")
+  background = dark_pixels | local_min_gray | img.mask
+  timeEnd("union dark pixels, minima, and mask regions")
+  Debug.save_image("threshold", "background", background)
+
+  '''
+  background_with_mask barely differs from background, but it
+  somehow differs enough to cause the pipeline to find different
+  numbers of intersections and segments. The differences seem to be
+  at the boundary of the mask, so I suspect they only result in
+  segments that will end up being deleted anyway.
+
+  TODO: Come back and check this after adding automated deletion
+  of segments that pass outside the ROI (assuming this isn't
+  already a thing).
+
+  bennlich 9/21
+
+  '''
+  # local_min_mask = local_min(img)
+  # Debug.save_image("threshold", "local_min_mask", local_min_mask)
+
+  # timeStart("union dark pixels, minima, and mask regions")
+  # background_with_mask = dark_pixels | local_min_mask | img.mask
+  # timeEnd("union dark pixels, minima, and mask regions")
+  # Debug.save_image("threshold", "background_with_mask", background_with_mask)
 
   if return_background is False:
     return flattened
