@@ -8,7 +8,6 @@ from lib.timer import timeStart, timeEnd
 
 import numpy as np
 from skimage import color
-from skimage.morphology import dilation, erosion
 from scipy.signal import convolve2d
 from skimage.morphology import watershed, remove_small_objects
 from skimage.filters import sobel
@@ -177,22 +176,3 @@ def peak_local_max_cols(a, include_border=False):
             np.vstack((a[:-1,:] >= a[1:,:],
                 np.ones((1,a.shape[1])) * include_border)))
   return maxima
-
-def local_min(image, min_distance=2):
-  if np.amax(image) <= 1:
-    image = np.uint8(image * 255)
-
-  selem = np.ones((2 * min_distance + 1, 2 * min_distance + 1))
-
-  timeStart("morphological erosion")
-  img = erosion(image, selem)
-  timeEnd("morphological erosion")
-
-  return image == img
-
-def local_max(image, min_distance=2):
-  if np.amax(image) <= 1:
-    image = np.uint8(image * 255)
-  selem = np.ones((2 * min_distance + 1, 2*min_distance + 1))
-  img = dilation(image, selem)
-  return image == img

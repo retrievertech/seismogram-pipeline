@@ -5,10 +5,32 @@ Created on Tue Feb 17 11:54:50 2015
 @author: benamy
 """
 
+from lib.timer import timeStart, timeEnd
+
 import numpy as np
 from skimage.draw import circle
 from scipy.stats import percentileofscore
+from skimage.morphology import dilation, erosion
 # from threshold import make_background_thresh_fun
+
+def local_min(image, min_distance=2):
+  if np.amax(image) <= 1:
+    image = np.uint8(image * 255)
+
+  selem = np.ones((2 * min_distance + 1, 2 * min_distance + 1))
+
+  timeStart("morphological erosion")
+  img = erosion(image, selem)
+  timeEnd("morphological erosion")
+
+  return image == img
+
+def local_max(image, min_distance=2):
+  if np.amax(image) <= 1:
+    image = np.uint8(image * 255)
+  selem = np.ones((2 * min_distance + 1, 2*min_distance + 1))
+  img = dilation(image, selem)
+  return image == img
 
 def normalize(a):
   '''
