@@ -16,6 +16,7 @@ from numpy.ma.core import MaskedArray
 from mitchells_best_candidate import best_candidate_sample
 from utilities import local_min
 
+generator = Debug.random
 
 def threshold(img, threshold_function, num_blocks, block_dims = None,
         smoothing = 0.003):
@@ -230,7 +231,7 @@ def get_hist_and_background_count(img):
   # Assume that data from 256,000 pixels is sufficient
   if img.size > 256 * 1000:
     prob = float(256 * 1000) / img.size
-    img = img[(np.random.random(size = img.shape) < prob)]
+    img = img[(generator.random(size = img.shape) < prob)]
   hist_counts, bin_edges = np.histogram(img, bins = bins)
 
   # Pad counts with 1 (to eliminate zeros)

@@ -1,5 +1,6 @@
 from scipy import misc
 from dir import ensure_dir_exists
+from numpy.random import RandomState
 
 def pad(number):
   numstr = str(number)
@@ -11,6 +12,7 @@ class Debug:
   active = False
   global_count = 0
   stage_count = {}
+  random = RandomState()
 
   @classmethod
   def set_directory(cls, debug_dir):
@@ -31,3 +33,7 @@ class Debug:
     filename = "%s.%s.%s.%s.png" % (pad(cls.global_count), stage, pad(count), name)
     misc.imsave(cls.debug_dir+"/"+filename, img)
     cls.global_count = cls.global_count + 1
+
+  @classmethod
+  def set_seed(cls, seed):
+    cls.random.seed(seed)

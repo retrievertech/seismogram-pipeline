@@ -7,7 +7,9 @@ Created on Sun Nov  9 21:53:26 2014
 
 import numpy as np
 from math import sqrt
-from numpy.random import randint, choice
+from lib.debug import Debug
+
+generator = Debug.random
 
 def best_candidate_sample(coords, num_samples, num_candidates = 10):
   '''
@@ -39,7 +41,7 @@ def best_candidate_sample(coords, num_samples, num_candidates = 10):
   return samples
 
 def get_candidates(coords, num_candidates):
-  random_indices = choice(len(coords), num_candidates)
+  random_indices = generator.choice(len(coords), num_candidates)
   candidates = coords[random_indices,:]
   return candidates
 
@@ -74,8 +76,8 @@ def best_candidate_sample_from_rect(shape, num_samples, num_candidates = 10):
 
 def get_candidates_from_rect(shape, num_candidates):
   candidates = np.zeros((num_candidates,2),dtype=int)
-  candidates[:,0] = randint(0,high=shape[0],size=num_candidates)
-  candidates[:,1] = randint(0,high=shape[1],size=num_candidates)
+  candidates[:,0] = generator.randint(0,high=shape[0],size=num_candidates)
+  candidates[:,1] = generator.randint(0,high=shape[1],size=num_candidates)
   return candidates
 
 def find_best_candidate(candidates, samples):
