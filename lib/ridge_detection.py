@@ -173,7 +173,10 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
   '''
 
   '''
-  # number of scales at which to compute a difference of gaussians
+  # num_scales is the number of scales at which to compute a difference of gaussians
+
+  # the following line in words: the number of times you need to multiply
+  # min_sigma by sigma_ratio to get max_sigma
   num_scales = int(log(float(max_sigma) / min_sigma, sigma_ratio)) + 1
 
   # a geometric progression of standard deviations for gaussian kernels
