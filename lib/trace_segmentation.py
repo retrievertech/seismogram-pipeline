@@ -86,7 +86,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   print "found %s segments" % np.amax(image_segments)
 
-  segments = img_seg_to_seg_objects(image_segments, ridges_h, ridges_v, img_gray)
+  segments = img_seg_to_seg_objects(image_segments, num_segments, ridges_h, ridges_v, img_gray)
 
   if Debug.active:
     from lib.segment_coloring import gray2prism, color_markers
@@ -102,7 +102,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   else:
     return (segments, image_segments)
 
-def img_seg_to_seg_objects(img_seg, ridges_h, ridges_v, img_gray):
+def img_seg_to_seg_objects(img_seg, num_segments, ridges_h, ridges_v, img_gray):
   '''
   Creates segment objects from an array of labeled pixels.
 
@@ -119,18 +119,33 @@ def img_seg_to_seg_objects(img_seg, ridges_h, ridges_v, img_gray):
   
   # segment_coordinates becomes a list of segments, where
   # each segment is a list of all of its pixel coordinates
-  segment_coordinates = [[] for i in xrange(np.amax(img_seg))]
+  # segment_coordinates = [[] for i in xrange(num_segments)]
 
   timeStart("get segment coordinates")
-  it = np.nditer(img_seg, flags=['multi_index'])
-  while not it.finished:
-    if it[0] == 0:
-      it.iternext()
-      continue
+  # it = np.nditer(img_seg, flags=['multi_index'])
+  # while not it.finished:
+  #   if it[0] == 0:
+  #     it.iternext()
+  #     continue
 
-    segment_idx = int(it[0] - 1)
-    segment_coordinates[segment_idx].append(np.array(it.multi_index))
-    it.iternext()
+  #   segment_idx = int(it[0] - 1)
+  #   segment_coordinates[segment_idx].append(np.array(it.multi_index))
+  #   it.iternext()
+
+  timeStart("nonzero")
+  segment_coords = np.nonzero(img_seg)
+  timeEnd("nonzero")
+
+  coords = np.column_stack(segment_coords)
+
+  timeStart("nzvals")
+  nzvals = img_seg[segment_coords[0], segment_coords[1]]
+  timeEnd("nzvals")
+
+  timeStart("index coords")
+  segment_coordinates = [ coords[nzvals == k] for k in range(1, num_segments + 1) ]
+  timeEnd("index coords")
+
   timeEnd("get segment coordinates")
 
   segments = {}
