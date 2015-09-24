@@ -119,32 +119,32 @@ def img_seg_to_seg_objects(img_seg, num_segments, ridges_h, ridges_v, img_gray):
   
   # segment_coordinates becomes a list of segments, where
   # each segment is a list of all of its pixel coordinates
-  # segment_coordinates = [[] for i in xrange(num_segments)]
+  segment_coordinates = [[] for i in xrange(num_segments)]
 
   timeStart("get segment coordinates")
-  # it = np.nditer(img_seg, flags=['multi_index'])
-  # while not it.finished:
-  #   if it[0] == 0:
-  #     it.iternext()
-  #     continue
+  it = np.nditer(img_seg, flags=['multi_index'])
+  while not it.finished:
+    if it[0] == 0:
+      it.iternext()
+      continue
 
-  #   segment_idx = int(it[0] - 1)
-  #   segment_coordinates[segment_idx].append(np.array(it.multi_index))
-  #   it.iternext()
+    segment_idx = int(it[0] - 1)
+    segment_coordinates[segment_idx].append(np.array(it.multi_index))
+    it.iternext()
 
-  timeStart("nonzero")
-  segment_coords = np.nonzero(img_seg)
-  timeEnd("nonzero")
+  # timeStart("nonzero")
+  # segment_coords = np.nonzero(img_seg)
+  # timeEnd("nonzero")
 
-  coords = np.column_stack(segment_coords)
+  # coords = np.column_stack(segment_coords)
 
-  timeStart("nzvals")
-  nzvals = img_seg[segment_coords[0], segment_coords[1]]
-  timeEnd("nzvals")
+  # timeStart("nzvals")
+  # nzvals = img_seg[segment_coords[0], segment_coords[1]]
+  # timeEnd("nzvals")
 
-  timeStart("index coords")
-  segment_coordinates = [ coords[nzvals == k] for k in range(1, num_segments + 1) ]
-  timeEnd("index coords")
+  # timeStart("index coords")
+  # segment_coordinates = [ coords[nzvals == k] for k in range(1, num_segments + 1) ]
+  # timeEnd("index coords")
 
   timeEnd("get segment coordinates")
 
