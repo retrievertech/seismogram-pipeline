@@ -231,7 +231,7 @@ def get_hist_and_background_count(img):
   # Assume that data from 256,000 pixels is sufficient
   if img.size > 256 * 1000:
     prob = float(256 * 1000) / img.size
-    img = img[(generator.random(size = img.shape) < prob)]
+    img = img[(generator.random_sample(size = img.shape) < prob)]
   hist_counts, bin_edges = np.histogram(img, bins = bins)
 
   # Pad counts with 1 (to eliminate zeros)
