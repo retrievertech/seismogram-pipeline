@@ -17,8 +17,8 @@ from skimage.feature import canny
 
 from reverse_medial_axis import reverse_medial_axis
 from binarization import fill_corners
-from classes import segment, get_ridge_line
-from geojson import LineString, Feature, FeatureCollection
+from segment import segment
+from geojson import FeatureCollection
 
 def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
          ridges_h, ridges_v, figure=False):
@@ -86,11 +86,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   print "found %s segments" % np.amax(image_segments)
 
-  segments = img_seg_to_seg_objects(image_segments)
-
-  timeStart("add ridges to segments")
-  add_ridges_to_segments(ridges_h, ridges_v, segments)
-  timeEnd("add ridges to segments")
+  segments = img_seg_to_seg_objects(image_segments, ridges_h, ridges_v, img_gray)
 
   if Debug.active:
     from lib.segment_coloring import gray2prism, color_markers
@@ -106,11 +102,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   else:
     return (segments, image_segments)
 
-'''
-store segments in objects
-'''
-
-def img_seg_to_seg_objects(img_seg):
+def img_seg_to_seg_objects(img_seg, ridges_h, ridges_v, img_gray):
   '''
   Creates segment objects from an array of labeled pixels.
 
@@ -141,19 +133,20 @@ def img_seg_to_seg_objects(img_seg):
     it.iternext()
   timeEnd("get segment coordinates")
 
-  dims = img_seg.shape
   segments = {}
   timeStart("create segment objects")
   for (segment_idx, pixel_coords) in enumerate(segment_coordinates):
     segment_id = segment_idx + 1
-    segments[segment_id] = segment(np.array(pixel_coords), dims, ID=segment_id)
+    seg = segments[segment_id] = segment(np.array(pixel_coords), id=segment_id)
+    seg.add_ridge_line(get_ridge_line(ridges_h, ridges_v, seg.region))
+    seg.add_region_values(get_image_values(img_gray, seg.region))
+    if (seg.has_center_line):
+      center_line_values = get_image_values(img_gray, seg.center_line)
+      seg.add_center_line_values(center_line_values)
+
   timeEnd("create segment objects")
 
   return segments
-
-def add_ridges_to_segments(ridges_h, ridges_v, segments):
-  for seg in segments.itervalues():
-    seg.add_ridge_line(get_ridge_line(ridges_h, ridges_v, seg.region))
 
 def image_overlay(img, overlay, mask = None):
   if img.ndim == 2:
@@ -165,18 +158,11 @@ def image_overlay(img, overlay, mask = None):
   images_combined = 0.5 * (img + overlay)
   return np.where(mask, img, images_combined)
 
-def segments_to_geojson(img_grayscale, segments):
-  geojson_line_segments = []
-  idx = 0
-  for seg in segments.itervalues():
-    if seg.has_center_line == True:
-      center_line = zip(map(int, seg.center_line.x), map(int, seg.center_line.y))
-      img_values = map(lambda pt : int(img_grayscale[pt[1], pt[0]]), center_line)
-      feature = Feature(geometry = LineString(center_line), id = idx, properties = { "values": img_values })
-      geojson_line_segments.append(feature)
-      idx = idx + 1
-  geojson_line_segments = FeatureCollection(geojson_line_segments)
-  return geojson_line_segments
+def segments_to_geojson(segments):
+  geojson_line_segments = \
+    [seg.to_geojson_feature() for seg in segments.itervalues() if seg.has_center_line]
+  return FeatureCollection(geojson_line_segments)
+
 def get_ridge_line(ridges_h, ridges_v, region):
   ridge_h_coords = get_ridges_in_region(ridges_h, region)
   ridge_v_coords = get_ridges_in_region(ridges_v, region)
