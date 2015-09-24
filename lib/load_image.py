@@ -1,6 +1,6 @@
 from skimage import io, img_as_float
 
-def get_image_as_float(img):
+def image_as_float(img):
   return img_as_float(img)
 
 def get_grayscale_image(filename):
