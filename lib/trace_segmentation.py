@@ -177,3 +177,75 @@ def segments_to_geojson(img_grayscale, segments):
       idx = idx + 1
   geojson_line_segments = FeatureCollection(geojson_line_segments)
   return geojson_line_segments
+def get_ridge_line(ridges_h, ridges_v, region):
+  ridge_h_coords = get_ridges_in_region(ridges_h, region)
+  ridge_v_coords = get_ridges_in_region(ridges_v, region)
+  ridge_line = ridges_to_centerline(ridge_h_coords, ridge_v_coords)
+  return ridge_line
+
+def get_image_values(img_gray, region):
+  return map(lambda pt : int(255*img_gray[tuple(pt)]), region.coords)
+
+def get_ridges_in_region(img_ridges, region):
+  '''
+  Parameters
+  ------------
+  img_ridges : 2-D binary array
+    The image containing the ridge lines.
+  region : region
+    The region of a segment.
+
+  Returns
+  ---------
+  ridge_coords : numpy array
+    An array, with two columns, containing the coordinates of ridge lines
+    in the region **region**.
+  '''
+  ridge_coords = region.coords[img_ridges[region.ii, region.jj]]
+  return ridge_coords
+
+def ridges_to_centerline(ridge_h_coords, ridge_v_coords):
+  if (ridge_h_coords.size == 0) and (ridge_v_coords.size == 0):
+    return np.array([[-1, -1]])
+
+  if ridge_v_coords.size > 0:
+    domain_v = np.array([np.amin(ridge_v_coords[:,1]),
+               np.amax(ridge_v_coords[:,1])], dtype=int)
+    truncate = True
+  else:
+    truncate = False
+
+  if ridge_h_coords.size > 0:
+    domain_h = np.array([np.amin(ridge_h_coords[:,1]),
+               np.amax(ridge_h_coords[:,1])], dtype=int)
+  else:
+    domain_h = domain_v[::-1]
+
+  # If ridges vertical at ends, truncate
+  if truncate:
+    if domain_v[0] <= domain_h[0]:
+      ridge_v_coords = \
+        ridge_v_coords[(ridge_v_coords[:,1] != domain_v[0]),:]
+    if domain_v[1] >= domain_h[1]:
+      ridge_v_coords = \
+        ridge_v_coords[(ridge_v_coords[:,1] != domain_v[1]),:]
+  
+  ridge = np.vstack((ridge_h_coords, ridge_v_coords))
+  return ridge_line_to_series(ridge)
+
+def ridge_line_to_series(coords):
+  '''
+
+  '''
+  if coords.size == 0:
+    return np.array([[0,0]])
+    
+  domain = (min(coords[:,1]), max(coords[:,1]))
+  series = []
+  for x in range(domain[0], domain[1] + 1):
+    y = coords[coords[:,1] == x][:,0]
+    if y.size > 0:
+      y = np.mean(y)
+      series.append(np.array([y, x]))
+  series = np.asarray(series)
+  return series

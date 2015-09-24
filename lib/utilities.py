@@ -81,3 +81,24 @@ def mark_coords(shape, coords):
 def draw_circle(image,coords,radius):
   rr, cc = circle(coords[0], coords[1], radius)
   image[rr, cc] = True
+
+'''
+Linear regression functions
+'''
+def linear_fit(coords):
+  y = coords[:,0]
+  x0 = np.ones_like(coords[:,1])
+  x1 = coords[:,1]
+  A = np.array([x1, x0])
+  w = np.linalg.lstsq(A.T, y)[0]
+  return w
+
+def quadratic_fit(coords):
+  y = coords[:,0]
+  x0 = np.ones_like(coords[:,1])
+  x1 = coords[:,1]
+  x2 = coords[:,1] ^ 2
+  A = np.array([x2, x1, x0])
+  w = np.linalg.lstsq(A.T, y)[0]
+  return w
+  
