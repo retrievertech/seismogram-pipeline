@@ -152,13 +152,20 @@ def img_seg_to_seg_objects(img_seg, num_segments, ridges_h, ridges_v, img_gray):
   timeStart("create segment objects")
   for (segment_idx, pixel_coords) in enumerate(segment_coordinates):
     segment_id = segment_idx + 1
-    seg = segments[segment_id] = segment(np.array(pixel_coords), id=segment_id)
-    seg.add_ridge_line(get_ridge_line(ridges_h, ridges_v, seg.region))
-    seg.add_region_values(get_image_values(img_gray, seg.region))
-    if (seg.has_center_line):
-      center_line_values = get_image_values(img_gray, seg.center_line)
-      seg.add_center_line_values(center_line_values)
+    pixel_coords = np.array(pixel_coords)
+    values = get_image_values(img_gray, pixel_coords)
+    ridge_line = get_ridge_line(ridges_h, ridges_v, pixel_coords)
+    
+    new_segment = segment(coords=pixel_coords,
+                          values=np.array(values),
+                          id=segment_id,
+                          ridge_line=ridge_line)
 
+    if (new_segment.has_center_line):
+      center_line_values = get_image_values(img_gray, new_segment.center_line)
+      new_segment.add_center_line_values(center_line_values)
+
+    segments[segment_idx] = new_segment
   timeEnd("create segment objects")
 
   return segments
@@ -184,25 +191,25 @@ def get_ridge_line(ridges_h, ridges_v, region):
   ridge_line = ridges_to_centerline(ridge_h_coords, ridge_v_coords)
   return ridge_line
 
-def get_image_values(img_gray, region):
-  return map(lambda pt : int(255*img_gray[tuple(pt)]), region.coords)
+def get_image_values(img_gray, coords):
+  return map(lambda pt : int(255*img_gray[tuple(pt)]), coords)
 
-def get_ridges_in_region(img_ridges, region):
+def get_ridges_in_region(img_ridges, coords):
   '''
   Parameters
   ------------
-  img_ridges : 2-D binary array
+  img_ridges : 2-D boolean array
     The image containing the ridge lines.
-  region : region
-    The region of a segment.
+  coords : 2-D numpy array
+    The coordinates that you want to check for ridges.
 
   Returns
   ---------
   ridge_coords : numpy array
-    An array, with two columns, containing the coordinates of ridge lines
-    in the region **region**.
+    The subset of coords at which img_ridges is true.
   '''
-  ridge_coords = region.coords[img_ridges[region.ii, region.jj]]
+  coords_mask = img_ridges[coords[:,0], coords[:,1]]
+  ridge_coords = coords[coords_mask]
   return ridge_coords
 
 def ridges_to_centerline(ridge_h_coords, ridge_v_coords):
@@ -210,8 +217,8 @@ def ridges_to_centerline(ridge_h_coords, ridge_v_coords):
     return np.array([[-1, -1]])
 
   if ridge_v_coords.size > 0:
-    domain_v = np.array([np.amin(ridge_v_coords[:,1]),
-               np.amax(ridge_v_coords[:,1])], dtype=int)
+    domain_v = np.array([ np.amin(ridge_v_coords[:,1]),
+                          np.amax(ridge_v_coords[:,1]) ], dtype=int)
     truncate = True
   else:
     truncate = False

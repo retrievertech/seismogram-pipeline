@@ -149,8 +149,8 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
 
   print "\n--SEGMENTS--"
   timeStart("get segments")
-  segments = get_segments(img_gray, img_bin, img_skel, dist, intersection_image,
-              ridges_h, ridges_v)
+  segments = get_segments(img_gray, img_bin, img_skel, dist,
+                          intersection_image, ridges_h, ridges_v)
   timeEnd("get segments")
 
   timeStart("convert segments to geojson")
