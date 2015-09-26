@@ -162,7 +162,7 @@ def img_seg_to_seg_objects(img_seg, num_segments, ridges_h, ridges_v, img_gray):
                           ridge_line=ridge_line)
 
     if (new_segment.has_center_line):
-      center_line_values = get_image_values(img_gray, new_segment.center_line)
+      center_line_values = get_image_values(img_gray, new_segment.center_line.coords)
       new_segment.add_center_line_values(center_line_values)
 
     segments[segment_idx] = new_segment
