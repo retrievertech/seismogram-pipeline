@@ -9,15 +9,12 @@ class segment:
   
   '''
 
-  # def __init__(self, pixel_coords, image_shape, ID=0):
-  #   self.region = region(pixel_coords, image_shape)
-  #   self.set_linear_fit()
-  #   self.id = id
-
-  def __init__(self, coords, id, ridge_line=None, values=None):
+  def __init__(self, coords, values, id, ridge_line=None):
     self.region = region(coords, values)
     self.set_linear_fit()
     self.id = id
+    if ridge_line is not None:
+      self.add_ridge_line(ridge_line)
 
   # def binary_image(self):
   #   return self.region.binary_image()
@@ -30,9 +27,6 @@ class segment:
       self.has_center_line = True
     else:
       self.has_center_line = False
-
-  def add_region_values(self, values):
-    self.region.values = values
 
   def add_center_line_values(self, values):
     self.center_line.values = values
@@ -95,6 +89,7 @@ class region:
 
   def __init__(self, coords, values):
     self.coords = coords
+    self.values = values
     self.ii = self.coords[:,0]
     self.jj = self.coords[:,1]
     self.calc_properties()
