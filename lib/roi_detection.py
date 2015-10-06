@@ -2,7 +2,7 @@ from timer import timeStart, timeEnd
 from lib.debug import Debug
 
 import numpy as np
-from scipy.ndimage.morphology import binary_opening
+import cv2
 from skimage.filters import threshold_otsu
 from skimage.morphology import disk
 from skimage.segmentation import find_boundaries
@@ -30,7 +30,7 @@ def get_boundary(grayscale_image, scale=1):
 
   timeStart("morphological open image")
   filter_element = disk(PARAMS["disk-size"](scale))
-  opened_image = binary_opening(black_and_white_image, filter_element)
+  opened_image = cv2.morphologyEx(255*black_and_white_image.astype(np.uint8), cv2.MORPH_OPEN, filter_element)
   timeEnd("morphological open image")
 
   timeStart("invert image")
