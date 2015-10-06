@@ -4,13 +4,15 @@ Description:
   Test just meanline and ROI detection, and save some statistics.
 
 Usage:
-  pipeline.py --image <filename> --output <directory> [--scale <scale>] [--debug <directory>] [--fix-seed]
+  pipeline.py --image <filename> --output <directory> [--stats <directory>] [--scale <scale>] [--debug <directory>] [--fix-seed]
   pipeline.py -h | --help
 
 Options:
   -h --help             Show this screen.
   --image <filename>    Filename of seismogram.
   --output <directory>  Save metadata in <directory>.
+  --stats <filename>    Write statistics (e.g. number of meanlines, size of ROI) to <filename>.
+                        If <filename> already exists, stats will be appended, not overwritten.
   --scale <scale>       1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
   --debug <directory>   Save intermediate steps as images for inspection in <directory>.
   --fix-seed            Fix random seed.
@@ -19,7 +21,7 @@ Options:
 
 from docopt import docopt
 
-def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
+def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, fix_seed=False):
   from lib.dir import ensure_dir_exists
   from lib.debug import Debug
 
@@ -96,15 +98,40 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
 
   timeEnd("get roi and meanlines")
 
+  if (stats_file):
+    import json
+    from lib.utilities import poly_area2D
+
+    num_meanlines = len(meanlines)
+    corners_clockwise = [
+      corners["top_left"], corners["top_right"],
+      corners["bottom_right"], corners["bottom_left"]
+    ]
+    roi_area = str(100 * poly_area2D(corners_clockwise) / img_gray.size)[:6]
+
+    try:
+      with open(stats_file, "rw") as myfile:
+        data = myfile.read()
+        stats = json.loads(data)
+    except IOError:
+      stats = { "num_meanlines":[], "roi_area":[] }
+
+    stats["num_meanlines"].append(num_meanlines)
+    stats["roi_area"].append(roi_area)
+
+    with open(stats_file, "w") as myfile:
+      json.dump(stats, myfile)
+
 if __name__ == '__main__':
   arguments = docopt(__doc__)
   in_file = arguments["--image"]
   out_dir = arguments["--output"]
+  stats_file = arguments["--stats"]
   scale = float(arguments["--scale"])
   debug_dir = arguments["--debug"]
   fix_seed = arguments["--fix-seed"]
 
   if (in_file and out_dir):
-    segments = analyze_image(in_file, out_dir, scale, debug_dir, fix_seed)
+    segments = analyze_image(in_file, out_dir, stats_file, scale, debug_dir, fix_seed)
   else:
     print(arguments)
