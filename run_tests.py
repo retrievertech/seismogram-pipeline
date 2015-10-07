@@ -1,20 +1,23 @@
 import random
 from subprocess import call
 
-f = open('filtered_files.txt', 'r')
+test_dir = "tests/"
+
+f = open(test_dir+'filtered_files.txt', 'r')
 lines = f.readlines()
 num_files = len(lines)
 
 num_to_process = 5
 random_idxs = random.sample(range(num_files), num_to_process)
 
-for idx in random_idxs:
+for (i, idx) in enumerate(random_idxs):
+  print "\nimage %s of %s" % (i, num_to_process)
   filename = lines[idx].rstrip()
-  print "copying %s from s3" % filename
-  call(["aws s3 cp \"s3://WWSSN_Scans/"+filename+"\" ./"+filename+" --region us-east-1"], shell=True)
+  local_path = test_dir+filename
+  call(["aws s3 cp \"s3://WWSSN_Scans/"+filename+"\" ./"+local_path+" --region us-east-1"], shell=True)
 
-  # print "running test_meanlines_and_roi.sh"
-  # call(["bash test_meanlines_and_roi_s3.sh", filename, filename], shell=True)
+  print "running test_meanlines_and_roi.sh"
+  call(["bash test_meanlines_and_roi_s3.sh "+filename+" "+local_path], shell=True)
 
   print "deleting %s" % filename
-  call(["rm "+filename], shell=True)
+  call(["rm "+local_path], shell=True)
