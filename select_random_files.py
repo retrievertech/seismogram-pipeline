@@ -1,6 +1,6 @@
 import random
 
-num_to_process = 5
+num_to_process = 100
 test_dir = "tests/"
 
 with open(test_dir+'filtered_files.txt', 'r') as f:
