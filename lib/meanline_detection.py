@@ -10,7 +10,8 @@ from skimage.color import gray2rgb
 import geojson
 
 PARAMS = {
-  "small-object-size": lambda scale: int(500*scale*scale)
+  "small-object-size": lambda scale: int(500*scale*scale),
+  "trace-spacing": lambda scale: int(150*scale)
 }
 
 def detect_meanlines(masked_image, scale=1):
@@ -27,7 +28,10 @@ def detect_meanlines(masked_image, scale=1):
   Debug.save_image("meanlines", "filtered_image", filtered_image)
 
   timeStart("get hough lines")
-  lines = get_all_hough_lines(filtered_image, min_angle=-120, max_angle=-70, min_separation_distance=9 , min_separation_angle=25)
+  min_separation_distance = PARAMS["trace-spacing"](scale) / 3
+  lines = get_all_hough_lines(filtered_image, min_angle=-100, max_angle=-80,
+                              min_separation_distance=min_separation_distance,
+                              min_separation_angle=5)
   timeEnd("get hough lines")
 
   if Debug.active:
