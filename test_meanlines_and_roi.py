@@ -107,7 +107,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
       corners["top_left"], corners["top_right"],
       corners["bottom_right"], corners["bottom_left"]
     ]
-    roi_area = str(100 * poly_area2D(corners_clockwise) / img_gray.size)[:6]
+    roi_area = poly_area2D(corners_clockwise)
 
     try:
       with open(stats_file, "rw") as myfile:
