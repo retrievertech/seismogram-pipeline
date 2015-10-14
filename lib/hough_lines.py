@@ -6,7 +6,7 @@ def get_hough_line_peaks(image, min_angle, max_angle, min_separation_distance, m
   hough, angles, distances = hough_line(image, angles)
   peak_hough, peak_angles, peak_distances = hough_line_peaks(hough, angles, distances,
                                               num_peaks=150,
-                                              threshold=0.5*np.amax(hough),
+                                              threshold=0.2*np.amax(hough),
                                               min_distance=min_separation_distance,
                                               min_angle=min_separation_angle)
   return (peak_hough, peak_angles, peak_distances)
