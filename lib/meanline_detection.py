@@ -28,7 +28,7 @@ def detect_meanlines(masked_image, scale=1):
   Debug.save_image("meanlines", "filtered_image", filtered_image)
 
   timeStart("get hough lines")
-  min_separation_distance = PARAMS["trace-spacing"](scale) / 3
+  min_separation_distance = int((2.0/3) * PARAMS["trace-spacing"](scale))
   lines = get_all_hough_lines(filtered_image, min_angle=-100, max_angle=-80,
                               min_separation_distance=min_separation_distance,
                               min_separation_angle=5)
