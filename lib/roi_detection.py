@@ -28,17 +28,28 @@ def get_boundary(grayscale_image, scale=1):
   black_and_white_image = otsu_threshold_image(grayscale_image)
   timeEnd("threshold image")
 
+  Debug.save_image("roi", "black_and_white_image", black_and_white_image)
+
   timeStart("morphological open image")
   filter_element_opening = disk(PARAMS["trace-width"](scale))
-  opened_image = cv2.morphologyEx(255*black_and_white_image.astype(np.uint8), cv2.MORPH_OPEN, filter_element)
+  opened_image = cv2.morphologyEx(255*black_and_white_image.astype(np.uint8), cv2.MORPH_OPEN, filter_element_opening)
   timeEnd("morphological open image")
 
+  Debug.save_image("roi", "opened_image", opened_image)
+
+  timeStart("morphological dilate image")
+  filter_element_dilation = disk(4*PARAMS["trace-width"](scale))
+  dilated_image = cv2.dilate(opened_image, filter_element_dilation)
+  timeEnd("morphological dilate image")
+
+  Debug.save_image("roi", "dilated_image", dilated_image)
+
   timeStart("invert image")
-  opened_image = np.invert(opened_image)
+  dilated_image = np.invert(dilated_image)
   timeEnd("invert image")
 
   timeStart("segment image into connected regions")
-  labeled_components, num_components = label(opened_image)
+  labeled_components, num_components = label(dilated_image)
   timeEnd("segment image into connected regions")
 
   timeStart("calculate region areas")
@@ -51,16 +62,15 @@ def get_boundary(grayscale_image, scale=1):
   image_boundaries = find_boundaries(labeled_components, connectivity=1, mode="inner", background=0)
   timeEnd("calculate region boundaries")
 
+  Debug.save_image("roi", "image_boundaries", image_boundaries)
+
   timeStart("mask region of interest")
   largest_component_id = np.argmax(areas) + 1
   region_of_interest_mask = (labeled_components != largest_component_id)
   region_of_interest_boundary = np.copy(image_boundaries)
   region_of_interest_boundary[region_of_interest_mask] = 0
   timeEnd("mask region of interest")
-
-  Debug.save_image("roi", "black_and_white_image", black_and_white_image)
-  Debug.save_image("roi", "opened_image", opened_image)
-  Debug.save_image("roi", "image_boundaries", image_boundaries)
+  
   Debug.save_image("roi", "region_of_interest_boundary", region_of_interest_boundary)
 
   return region_of_interest_boundary
