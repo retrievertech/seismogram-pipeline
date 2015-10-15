@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import geojson
 
 PARAMS = {
-  "disk-size": lambda scale: int(17*scale)
+  "trace-width": lambda scale: int(17*scale)
 }
 
 def get_boundary(grayscale_image, scale=1):
@@ -29,7 +29,7 @@ def get_boundary(grayscale_image, scale=1):
   timeEnd("threshold image")
 
   timeStart("morphological open image")
-  filter_element = disk(PARAMS["disk-size"](scale))
+  filter_element_opening = disk(PARAMS["trace-width"](scale))
   opened_image = cv2.morphologyEx(255*black_and_white_image.astype(np.uint8), cv2.MORPH_OPEN, filter_element)
   timeEnd("morphological open image")
 
