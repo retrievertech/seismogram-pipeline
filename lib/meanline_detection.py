@@ -7,6 +7,7 @@ from skimage.morphology import remove_small_objects
 import numpy as np
 import skimage.draw as skidraw
 from skimage.color import gray2rgb
+import numpy.ma as ma
 import geojson
 
 PARAMS = {
@@ -14,9 +15,28 @@ PARAMS = {
   "trace-spacing": lambda scale: int(150*scale)
 }
 
-def detect_meanlines(masked_image, scale=1, return_stats=False):
+def detect_meanlines(masked_image, corners, scale=1, return_stats=False):
+  padding = PARAMS["trace-spacing"](scale) / 2
+
+  timeStart("bound image")
+  # effectively shrink the roi by a distance **padding**
+  top_bound = padding + np.amax([corners["top_left"][1], corners["top_right"][1]])
+  bottom_bound = -padding + np.amin([corners["bottom_left"][1], corners["bottom_right"][1]])
+  left_bound = padding + np.amax([corners["bottom_left"][0], corners["top_left"][0]])
+  right_bound = -padding + np.amin([corners["top_right"][0], corners["bottom_right"][0]])
+
+  # mask all image values outside of this shrunken roi
+  bounded_image = masked_image.copy()
+  bounded_image[:top_bound, :] = ma.masked
+  bounded_image[bottom_bound:, :] = ma.masked
+  bounded_image[:, :left_bound] = ma.masked
+  bounded_image[:, right_bound:] = ma.masked
+  timeEnd("bound image")
+
+  Debug.save_image("meanlines", "bounded_image", bounded_image.filled(0))
+
   timeStart("threshold image")
-  black_and_white_image = otsu_threshold_image(masked_image)
+  black_and_white_image = otsu_threshold_image(bounded_image)
   timeEnd("threshold image")
 
   Debug.save_image("meanlines", "thresholded_image", black_and_white_image)

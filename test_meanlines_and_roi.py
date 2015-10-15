@@ -86,7 +86,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
 
 
   print "\n--MEANLINES--"
-  meanlines, meanline_stats = detect_meanlines(masked_image, scale=scale, return_stats=True)
+  meanlines, meanline_stats = detect_meanlines(masked_image, corners, scale=scale, return_stats=True)
 
   timeStart("convert meanlines to geojson")
   meanlines_as_geojson = meanlines_to_geojson(meanlines)

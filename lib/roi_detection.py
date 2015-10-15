@@ -37,19 +37,12 @@ def get_boundary(grayscale_image, scale=1):
 
   Debug.save_image("roi", "opened_image", opened_image)
 
-  timeStart("morphological dilate image")
-  filter_element_dilation = disk(4*PARAMS["trace-width"](scale))
-  dilated_image = cv2.dilate(opened_image, filter_element_dilation)
-  timeEnd("morphological dilate image")
-
-  Debug.save_image("roi", "dilated_image", dilated_image)
-
   timeStart("invert image")
-  dilated_image = np.invert(dilated_image)
+  opened_image = np.invert(opened_image)
   timeEnd("invert image")
 
   timeStart("segment image into connected regions")
-  labeled_components, num_components = label(dilated_image)
+  labeled_components, num_components = label(opened_image)
   timeEnd("segment image into connected regions")
 
   timeStart("calculate region areas")
