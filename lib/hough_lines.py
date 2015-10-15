@@ -1,14 +1,41 @@
 import numpy as np
 from skimage.transform import hough_line, hough_line_peaks
 
+from debug import Debug
+from utilities import normalize
+
 def get_hough_line_peaks(image, min_angle, max_angle, min_separation_distance, min_separation_angle):
   angles = np.deg2rad(np.arange(min_angle, max_angle, 0.5))
   hough, angles, distances = hough_line(image, angles)
+
+  if Debug.active:
+    rho_bin_size = min_separation_distance
+    binned_hough = np.zeros([int(hough.shape[0]/rho_bin_size), hough.shape[1]])
+
+    for rho in range(0, binned_hough.shape[0]):
+      slice_start = rho*rho_bin_size
+      slice_end = slice_start+rho_bin_size
+      binned_hough[rho, :] = np.sum(hough[slice_start:slice_end, :], axis=0)
+
+    Debug.save_image("hough", "accumulator", normalize(hough))
+    Debug.save_image("hough", "binned_accumulator", normalize(binned_hough))
+
   peak_hough, peak_angles, peak_distances = hough_line_peaks(hough, angles, distances,
                                               num_peaks=150,
                                               threshold=0.2*np.amax(hough),
                                               min_distance=min_separation_distance,
                                               min_angle=min_separation_angle)
+  if Debug.active:
+    peak_angle_idxs = [ np.where(angles == angle)[0][0] for angle in peak_angles ]
+    peak_rho_idxs = [ np.where(distances == distance)[0][0] for distance in peak_distances ]
+
+    peak_coords = zip(peak_rho_idxs, peak_angle_idxs)
+    
+    peaks = np.zeros(hough.shape)
+    for coord in peak_coords:
+      peaks[coord] = 1
+    Debug.save_image("hough", "accumulator_peaks", peaks)
+
   return (peak_hough, peak_angles, peak_distances)
 
 def get_best_hough_lines(image, min_angle, max_angle, min_separation_distance, min_separation_angle):
@@ -24,8 +51,6 @@ def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance, mi
 Tried doing some fancier stuff with the hough accumulator matrix here, but it didn't work out.
 
 '''
-# from debug import Debug
-# from utilities import normalize
 # from scipy.ndimage.filters import gaussian_filter1d
 # from scipy.signal import argrelextrema
 
