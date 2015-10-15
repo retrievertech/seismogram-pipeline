@@ -14,7 +14,7 @@ PARAMS = {
   "trace-spacing": lambda scale: int(150*scale)
 }
 
-def detect_meanlines(masked_image, scale=1):
+def detect_meanlines(masked_image, scale=1, return_stats=False):
   timeStart("threshold image")
   black_and_white_image = otsu_threshold_image(masked_image)
   timeEnd("threshold image")
@@ -27,11 +27,11 @@ def detect_meanlines(masked_image, scale=1):
 
   Debug.save_image("meanlines", "filtered_image", filtered_image)
 
-  timeStart("get hough lines")
+  timeStart("get hough lines")  
   min_separation_distance = int((2.0/3) * PARAMS["trace-spacing"](scale))
-  lines = get_all_hough_lines(filtered_image, min_angle=-100, max_angle=-80,
+  lines, stats = get_all_hough_lines(filtered_image, min_angle=-100, max_angle=-80,
                               min_separation_distance=min_separation_distance,
-                              min_separation_angle=5)
+                              min_separation_angle=5, return_stats=True)
   timeEnd("get hough lines")
 
   if Debug.active:
@@ -43,7 +43,10 @@ def detect_meanlines(masked_image, scale=1):
       debug_image[rr[mask], cc[mask]] = [1.0, 0, 0]
     Debug.save_image("meanlines", "meanlines", debug_image)
 
-  return lines
+  if return_stats:
+    return (lines, stats)
+  else:
+    return lines
 
 def meanlines_to_geojson(lines):
   lines = [ geojson.Feature(geometry = geojson.LineString(line), id = idx) for idx, line in enumerate(lines) ]

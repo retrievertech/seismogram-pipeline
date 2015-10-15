@@ -86,7 +86,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
 
 
   print "\n--MEANLINES--"
-  meanlines = detect_meanlines(masked_image, scale=scale)
+  meanlines, meanline_stats = detect_meanlines(masked_image, scale=scale, return_stats=True)
 
   timeStart("convert meanlines to geojson")
   meanlines_as_geojson = meanlines_to_geojson(meanlines)
@@ -101,6 +101,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   if (stats_file):
     import json
     from lib.utilities import poly_area2D
+    from lib.quality_control import points_to_rho_theta
 
     num_meanlines = len(meanlines)
     corners_clockwise = [
@@ -108,16 +109,27 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
       corners["bottom_right"], corners["bottom_left"]
     ]
     roi_area = poly_area2D(corners_clockwise)
+    _, roi_angle_top = points_to_rho_theta(corners["top_left"], corners["top_right"])
+    _, roi_angle_bottom = points_to_rho_theta(corners["bottom_right"], corners["bottom_left"])
 
     try:
       with open(stats_file, "rw") as myfile:
         data = myfile.read()
         stats = json.loads(data)
     except IOError:
-      stats = { "num_meanlines":[], "roi_area":[] }
+      stats = {
+        "num_meanlines":[],
+        "roi_area":[],
+        "roi_angle_top":[],
+        "roi_angle_bottom":[],
+        "theta_mode":[]
+      }
 
     stats["num_meanlines"].append(num_meanlines)
     stats["roi_area"].append(roi_area)
+    stats["roi_angle_top"].append(roi_angle_top)
+    stats["roi_angle_bottom"].append(roi_angle_bottom)
+    stats["theta_mode"].append(meanline_stats["max_theta"])
 
     with open(stats_file, "w") as myfile:
       json.dump(stats, myfile)
