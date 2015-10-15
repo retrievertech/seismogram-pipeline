@@ -26,7 +26,7 @@ def points_to_rho_theta(p0, p1):
     # horizontal line
     return (y1, np.pi/2)
 
-  slope = (y1 - y0) / (x1 - x0)
+  slope = float(y1 - y0) / (x1 - x0)
   intercept = y1 - slope*x1
   theta = np.arctan(-1/slope)
   rho = intercept * np.sin(theta)
