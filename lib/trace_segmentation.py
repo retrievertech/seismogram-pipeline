@@ -97,7 +97,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
     traces_colored = color_markers(np.logical_not(img_bin), traces_colored, [0,0,0])
     Debug.save_image("segments", "segment_regions", traces_colored)
 
-  if figure == False:
+  if figure == False: 
     return segments
   else:
     return (segments, image_segments)
