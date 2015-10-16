@@ -14,6 +14,9 @@ def check_roi(corners):
 
   return (error <= acceptable_error)
 
+# transform coordinates describing a line
+# from two (x, y) pairs to one (rho, theta) pair
+# (i.e. to hough space)
 def points_to_rho_theta(p0, p1):
   [x0, y0] = p0
   [x1, y1] = p1
@@ -24,10 +27,12 @@ def points_to_rho_theta(p0, p1):
 
   if (y1 == y0):
     # horizontal line
-    return (y1, np.pi/2)
+    return (y1, -np.pi/2)
 
   slope = float(y1 - y0) / (x1 - x0)
   intercept = y1 - slope*x1
-  theta = np.arctan(-1/slope)
+  theta = np.arctan2(-1, slope)
+  # using arctan2 instead of arctan means
+  # theta will always be on the interval [0, -PI]
   rho = intercept * np.sin(theta)
   return (rho, theta)

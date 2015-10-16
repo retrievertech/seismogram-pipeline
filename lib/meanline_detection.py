@@ -3,6 +3,7 @@ from debug import Debug
 
 from otsu_threshold_image import otsu_threshold_image
 from hough_lines import get_all_hough_lines
+from quality_control import points_to_rho_theta
 from skimage.morphology import remove_small_objects
 import numpy as np
 import skimage.draw as skidraw
@@ -47,11 +48,17 @@ def detect_meanlines(masked_image, corners, scale=1, return_stats=False):
 
   Debug.save_image("meanlines", "filtered_image", filtered_image)
 
-  timeStart("get hough lines")  
+  timeStart("get hough lines")
+  roi_top_angle = np.rad2deg(points_to_rho_theta(corners["top_left"], corners["top_right"])[1])
+  angle_padding = 2 # degrees
+  min_angle = roi_top_angle - angle_padding
+  max_angle = roi_top_angle + angle_padding
   min_separation_distance = int((2.0/3) * PARAMS["trace-spacing"](scale))
-  lines, stats = get_all_hough_lines(filtered_image, min_angle=-100, max_angle=-80,
-                              min_separation_distance=min_separation_distance,
-                              min_separation_angle=5, return_stats=True)
+  lines, stats = get_all_hough_lines(filtered_image,
+                                    min_angle=min_angle,
+                                    max_angle=max_angle,
+                                    min_separation_distance=min_separation_distance,
+                                    min_separation_angle=5, return_stats=True)
   timeEnd("get hough lines")
 
   if Debug.active:
