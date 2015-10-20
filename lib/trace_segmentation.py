@@ -62,14 +62,15 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   Debug.save_image("segments", "eroded_steep_slopes", steep_slopes)
 
-  timeStart("bitwise & and ~")
+  timeStart("subtract regions from skeleton")
   segments_bin = (img_skel & (~ img_intersections) & (~ image_canny) &
           (~ steep_slopes))
-  timeEnd("bitwise & and ~")
+  timeEnd("subtract regions from skeleton")
 
   Debug.save_image("segments", "skeleton_minus_intersections_minus_edges_minus_steep_slopes", segments_bin)
 
   timeStart("reverse medial axis")
+  # regrow segment regions from segment skeletons
   rmat = reverse_medial_axis(segments_bin, dist)
   timeEnd("reverse medial axis")
 
@@ -77,16 +78,24 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   # maybe, instead of running medial_axis again, do nearest-neighbor interp
   timeStart("get distance transform")
+  # the pixels values of rmat_dist correspond to the distance
+  # between each pixel and its nearest foreground/background boundary
   _, rmat_dist = medial_axis(rmat, return_distance=True)
   timeEnd("get distance transform")
 
-  timeStart("label segments")
+  Debug.save_image("segments", "distance_transform", rmat_dist)
+
+  timeStart("label segment skeletons")
   image_segments, num_segments = label(segments_bin, np.ones((3,3)))
-  timeEnd("label segments")
+  timeEnd("label segment skeletons")
+
+  Debug.save_image("segments", "labeled_skeleton", image_segments)
 
   timeStart("watershed")
   image_segments = watershed(-rmat_dist, image_segments, mask=rmat)
   timeEnd("watershed")
+
+  Debug.save_image("segments", "watershed", image_segments)
 
   print "found %s segments" % np.amax(image_segments)
 
@@ -240,11 +249,13 @@ def get_ridge_coords_in_region(ridges, coord_list):
 
 def ridges_to_centerline(ridge_h_coords, ridge_v_coords):
   '''
-  Still figuring out the purpose of this function. My current
-  hypothesis is that it limits the use of vertical ridges when
-  calculating the center line coords. I think the goal is to
-  include vertical ridges in centerline estimation *only* when
-  there are horizontal ridges at the same x-coordinate.
+  After corresponding with Benamy, it sounds like the purpose
+  of this function is to trim vertical ridges off the ends of
+  a ridge. At the ridge ends, we can't know for sure if all
+  vertical ridge pixels have been captured, so their average
+  position may not correspond to the centerline. Whereas anywhere
+  else in the ridge, verticle ridge pixels are flanked by
+  horizontal ridge pixels, so we know we have them all.
   
   '''
   if (ridge_h_coords.size == 0) and (ridge_v_coords.size == 0):
