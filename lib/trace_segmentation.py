@@ -102,7 +102,7 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
   segments = img_seg_to_seg_objects(image_segments, num_segments, ridges_h, ridges_v, img_gray)
 
   if Debug.active:
-    from lib.segment_coloring import gray2prism, color_markers
+    from lib.segment_coloring import gray2prism
     num_traces = np.amax(image_segments)
     # try to assign different gray values to neighboring segments
     traces_colored = (image_segments + num_traces * (image_segments % 4)) / float(4 * num_traces)
