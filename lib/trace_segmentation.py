@@ -28,17 +28,21 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   Debug.save_image("segments", "edges", image_canny)
 
-  timeStart("fill corners")
-  filled_corners_canny = fill_corners(image_canny)
-  timeEnd("fill corners")
+  # Strange: just noticed that none of the below had
+  # ever been getting used for as long as this file
+  # has existed.
 
-  Debug.save_image("segments", "edges_with_corners", filled_corners_canny)
+  # timeStart("fill canny corners")
+  # filled_corners_canny = fill_corners(image_canny)
+  # timeEnd("fill canny corners")
 
-  timeStart("bitwise & and ~")
-  img_bin = img_bin & (~ filled_corners_canny)
-  timeEnd("bitwise & and ~")
+  # Debug.save_image("segments", "edges_with_corners", filled_corners_canny)
 
-  Debug.save_image("segments", "binary_image_minus_edges", img_bin)
+  # timeStart("subtract canny corners from image")
+  # img_bin = img_bin & (~ filled_corners_canny)
+  # timeEnd("subtract canny corners from image")
+
+  # Debug.save_image("segments", "binary_image_minus_edges", img_bin)
 
   timeStart("sobel filter")
   image_sobel = sobel(img_gray)
