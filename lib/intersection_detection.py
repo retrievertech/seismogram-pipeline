@@ -353,16 +353,6 @@ def mark_coords(shape, coords):
     markers[x[0],x[1]] = True
   return markers
 
-def color_markers(marker_image, background, marker_color=[1,0,0]):
-  if background.ndim == 2:
-    background = color.gray2rgb(background)
-  image_color = np.ndarray(np.r_[marker_image.shape,3])
-  image_color[:,:] = marker_color
-  marker_image = np.dstack((marker_image,marker_image,marker_image))
-  overlay = np.where(marker_image, image_color, background)
-  marker_image = marker_image[:,:,0]
-  return overlay
-
 def draw_circle(image,coords,radius):
   '''
   Sets all values of an array in a circular region to True.
