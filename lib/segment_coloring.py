@@ -4,8 +4,9 @@ from skimage import color
 
 def gray2prism(gray):
   cmap = plt.get_cmap('prism')
-  rgba_img = cmap(gray)
-  return np.delete(rgba_img,3,2)
+  # convert to prism colors and remove alpha channel
+  rgb_img = cmap(gray)[:, :, :-1]
+  return rgb_img
 
 def color_markers(marker_image, background, marker_color=[1,0,0]):
   if background.ndim == 2:
