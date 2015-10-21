@@ -16,8 +16,13 @@ var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
  
   // Finish the task asynchronously 
   setTimeout(function() {
-    resolve();
-  }, 1000);
+    if (Math.random() < 0.5) {
+      resolve();
+    }
+    else {
+      reject();
+    }
+  }, 5000);
 });
 
 // exec(command, {maxBuffer: 1024 * 1000}, function(err, stdout, stderr) {
