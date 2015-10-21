@@ -1,23 +1,24 @@
 var Queue = require('firebase-queue'),
     Firebase = require("firebase"),
-    exec = require("child_process").exec;
+    exec = require("child_process").exec,
+    rootRef = require("./rootRef");
 
-var ref = new Firebase('https://seismogram.firebaseio.com/queue');
+// post machine presence to firebase
+require("./presence");
 
-ref.push("I'm here");
-
-// var queue = new Queue(ref, function(data, progress, resolve, reject) {
-//   // Read and process task data 
-//   console.log(data);
+var queueRef = rootRef.child("queue");
+var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
+  // Read and process task data 
+  console.log(data);
  
-//   // Do some work 
-//   progress(50);
+  // Do some work 
+  progress(50);
  
-//   // Finish the task asynchronously 
-//   setTimeout(function() {
-//     resolve();
-//   }, 1000);
-// });
+  // Finish the task asynchronously 
+  setTimeout(function() {
+    resolve();
+  }, 1000);
+});
 
 // exec(command, {maxBuffer: 1024 * 1000}, function(err, stdout, stderr) {
 //   if (err) {
