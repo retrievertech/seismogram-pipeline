@@ -43,14 +43,15 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
   from lib.ridge_detection import find_ridges
   from lib.binarization import binary_image
   from lib.intersection_detection import find_intersections
-  from lib.trace_segmentation import get_segments, segments_to_geojson
-  from lib.geojson_io import save_features
+  from lib.trace_segmentation import get_segments, segments_to_json
+  from lib.geojson_io import save_features, save_json
 
   paths = {
     "roi": out_dir+"/roi.json",
     "meanlines": out_dir+"/meanlines.json",
     "intersections": out_dir+"/intersections.json",
     "segments": out_dir+"/segments.json",
+    "segment_properties": out_dir+"/segment_properties.json",
     "segment_assignments": out_dir+"/segment_assignments.json"
   }
 
@@ -153,13 +154,17 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
                           intersection_image, ridges_h, ridges_v)
   timeEnd("get segments")
 
-  timeStart("convert segments to geojson")
-  segments_as_geojson = segments_to_geojson(segments)
-  timeEnd("convert segments to geojson")
+  timeStart("convert segments to geojson + json")
+  segments_as_geojson, properties_as_json = segments_to_json(segments)
+  timeEnd("convert segments to geojson + json")
 
   timeStart("saving segments as geojson")
   save_features(segments_as_geojson, paths["segments"])
   timeEnd("saving segments as geojson")
+
+  timeStart("saving segment properties as json")
+  save_json(properties_as_json, paths["segment_properties"])
+  timeEnd("saving segment properties as json")
 
   #return (img_gray, ridges, img_bin, intersections, img_seg)
   # return segments

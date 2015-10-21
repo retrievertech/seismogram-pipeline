@@ -39,17 +39,25 @@ class segment:
 
   def to_geojson_feature(self):
     center_line = zip(map(int, self.center_line.x), map(int, self.center_line.y))
-    return Feature(geometry=LineString(center_line),
-                   id=self.id,
-                   properties={ "values": self.center_line.values })
+    return Feature(geometry=LineString(center_line), id=self.id)
 
-    # return Feature(
-    #   geometry = LineString(center_line),
-    #   id = self.id,
-    #   properties = {
-    #     "values": self.center_line.values,
-    #     "pixel_coords": self.region.coords
-    #   })
+  def to_json_properties(self):
+    '''
+    These properties are needed in combination with the
+    geojson to reconstruct complete segment objects. This is
+    useful for debugging and for more advanced segment assignment.
+    
+    We store the properties separately from the geojson because
+    the client only needs the geojson for rendering; it shouldn't
+    have to download all the extra property cruft from the server.
+
+    '''
+    region_coords = zip(map(int, self.region.ii), map(int, self.region.jj))
+    properties = {
+      "values": self.region.values.tolist(),
+      "coords": region_coords
+    }
+    return properties
 
   # def set_pixel_series(self):
   #   self.pixel_series = ridge_line_to_series(self.ridge_line)
