@@ -150,6 +150,10 @@ def img_seg_to_seg_objects(img_seg, num_segments, ridges_h, ridges_v, img_gray):
     segment_coordinates[segment_idx].append(np.array(it.multi_index))
     it.iternext()
 
+  # if the number of segments is small relative
+  # to the size of the image, the commented algorithm below
+  # is faster than that above
+
   # timeStart("nonzero")
   # segment_coords = np.nonzero(img_seg)
   # timeEnd("nonzero")
