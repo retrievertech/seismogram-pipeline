@@ -90,3 +90,11 @@ var setStatus = function(filename, status) {
     }
   });
 }
+
+process.on('SIGINT', function() {
+  console.log('Starting queue shutdown');
+  queue.shutdown().then(function() {
+    console.log('Finished queue shutdown');
+    process.exit(0);
+  });
+});
