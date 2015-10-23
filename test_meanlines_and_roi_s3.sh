@@ -18,6 +18,6 @@ dir=`mktemp -d /tmp/seismo.XXXXX` && \
 echo "writing to $dir" && \
 sh set_seismo_status.sh $image_name 0 && \
 python test_meanlines_and_roi.py --image "$image_path" --output "$dir" --stats stats.json && \
-sh copy_to_s3.sh $image_name $dir normal $type && \
+sh copy_to_s3.sh $image_name $dir metadata $type && \
 sh set_seismo_status.sh $image_name 3 && \
 rm -rf $dir
