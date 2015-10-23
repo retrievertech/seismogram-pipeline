@@ -1,6 +1,8 @@
 var Queue = require('firebase-queue'),
     Firebase = require("firebase"),
-    mkdirp = require('mkdirp'),
+    mkdirp = require("mkdirp"),
+    rimraf = require("rimraf"),
+    async = require("async"),
     exec = require("child_process").exec,
     fs = require("fs");
 
@@ -43,9 +45,15 @@ var processSeismo = function(filename, callback) {
     log += stdout;
     log += "\n== stderr ==\n";
     log += stderr;
-
     console.log(log);
-    writeLog(filename, log);
+
+    var seismoLogDir = logPath + "/" + filename;
+
+    async.series([
+      function(cb) { writeLog(seismoLogDir, log, cb); },
+      function(cb) { uploadLog(filename, seismoLogDir, cb); },
+      function(cb) { rimraf(seismoLogDir); }
+    ]);
 
     callback(err);
   });
@@ -55,32 +63,30 @@ var processSeismo = function(filename, callback) {
   });
 }
 
-var writeLog = function(filename, logContents) {
-  var seismoLogPath = logPath + "/" + filename;
-
-  if (!fs.existsSync(seismoLogPath)) {
-    mkdirp.sync(seismoLogPath);
+var writeLog = function(logDir, logContents, callback) {
+  if (!fs.existsSync(logDir)) {
+    mkdirp.sync(logDir);
   }
 
-  var path = seismoLogPath + "/log.txt";
+  var path = logDir + "/log.txt";
 
   fs.writeFile(path, logContents, function(err) {
     if (err) {
       console.log("error writing to log", filename, err);
       return;
     }
-    uploadLog(filename, seismoLogPath);
+    if (typeof callback === "function") callback();
   });
 };
 
-var uploadLog = function(filename, path) {
-  var command = "sh copy_to_s3.sh " + filename + " " + path + " logs";
+var uploadLog = function(filename, logDir, callback) {
+  var command = "sh copy_to_s3.sh " + filename + " " + logDir + " logs";
   console.log(command);
   exec(command, function(err) {
     if (err) {
       console.log("error copying log to s3", err);
-      return;
     }
+    if (typeof callback === "function") callback();
   });
 }
 
