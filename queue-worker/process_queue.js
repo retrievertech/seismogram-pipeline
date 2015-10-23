@@ -1,5 +1,6 @@
 var Queue = require('firebase-queue'),
     Firebase = require("firebase"),
+    mkdirp = require('mkdirp'),
     exec = require("child_process").exec,
     fs = require("fs");
 
@@ -12,17 +13,18 @@ var logPath = __dirname + "/logs";
 
 var queueRef = rootRef.child("queue");
 var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
-  // Read and process task data 
+  console.log("received new job:");
   console.log(data);
- 
-  var filename = data.filename;
 
+  var filename = data.filename;
   processSeismo(filename, function(err) {
     if (err) {
+      console.log("failed to process "+filename+"; marking job rejected");
       setStatus(filename, status.failed);
       reject(err);
       return;
     }
+    console.log("successfully processed "+filename+"; marking job resolved");
     resolve();
   });
 });
@@ -30,6 +32,7 @@ var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
 var processSeismo = function(filename, callback) {  
   var command = "sh process_task.sh " + filename;
 
+  console.log(command);
   // if (process.env.NODE_ENV !== "production") {
   //   command += " dev";
   // }
@@ -48,18 +51,20 @@ var processSeismo = function(filename, callback) {
 }
 
 var writeLog = function(filename, logContents) {
-  if (!fs.existsSync(logPath)) {
-    fs.mkdirSync(logPath);
+  var seismoLogPath = logPath + "/" + filename;
+  
+  if (!fs.existsSync(seismoLogPath)) {
+    mkdirp.sync(seismoLogPath);
   }
 
-  var path = logPath + "/" + filename + ".txt";
+  var path = seismoLogPath + "/log.txt";
 
   fs.writeFile(path, logContents, function(err) {
     if (err) {
       console.log("error writing to log", filename, err);
       return;
     }
-    uploadLog(filename, path);
+    uploadLog(filename, seismoLogPath);
   });
 };
 
