@@ -38,7 +38,7 @@ var processSeismo = function(filename, callback) {
   //   command += " dev";
   // }
 
-  exec(command, function(err, stdout, stderr) {
+  new_process = exec(command, function(err, stdout, stderr) {
     var log = "== stdout ==\n";
     log += stdout;
     log += "\n== stderr ==\n";
@@ -48,6 +48,10 @@ var processSeismo = function(filename, callback) {
     writeLog(filename, log);
 
     callback(err);
+  });
+
+  new_process.stdout.on("data", function(data) {
+    console.log("stdout: " + data);
   });
 }
 
