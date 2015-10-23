@@ -7,6 +7,7 @@ var Queue = require('firebase-queue'),
 require("./presence");
 
 var rootRef = require("./rootRef");
+var status = require("./status");
 var logPath = __dirname + "/logs";
 
 var queueRef = rootRef.child("queue");
@@ -16,20 +17,14 @@ var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
  
   var filename = data.filename;
 
-  processSeismo(filename, cb);
-
-  // Do some work 
-  // progress(50);
- 
-  // Finish the task asynchronously 
-  // setTimeout(function() {
-  //   if (Math.random() < 0.5) {
-  //     resolve();
-  //   }
-  //   else {
-  //     reject();
-  //   }
-  // }, 5000);
+  processSeismo(filename, function(err) {
+    if (err) {
+      setStatus(filename, status.failed);
+      reject(err);
+      return;
+    }
+    resolve();
+  });
 });
 
 var processSeismo = function(filename, callback) {  
@@ -45,12 +40,10 @@ var processSeismo = function(filename, callback) {
     log += "\n== stderr ==\n";
     log += stderr;
 
-    if (err) {
-      setStatus(filename, status.failed);
-    }
-
     console.log(log);
     writeLog(filename, log);
+
+    callback(err);
   });
 }
 
