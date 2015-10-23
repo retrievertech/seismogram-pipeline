@@ -12,7 +12,8 @@ var status = require("./status");
 var logPath = __dirname + "/logs";
 
 var queueRef = rootRef.child("queue");
-var queue = new Queue(queueRef, function(data, progress, resolve, reject) {
+var opts = { specId: "seismoSpec" };
+var queue = new Queue(queueRef, opts, function(data, progress, resolve, reject) {
   console.log("received new job:");
   console.log(data);
 
@@ -52,7 +53,7 @@ var processSeismo = function(filename, callback) {
 
 var writeLog = function(filename, logContents) {
   var seismoLogPath = logPath + "/" + filename;
-  
+
   if (!fs.existsSync(seismoLogPath)) {
     mkdirp.sync(seismoLogPath);
   }
