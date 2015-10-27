@@ -32,6 +32,9 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   if fix_seed:
     Debug.set_seed(1234567890)
 
+  if stats_file:
+    Record.activate()
+
   ensure_dir_exists(out_dir)
 
   from lib.timer import timeStart, timeEnd
@@ -81,7 +84,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
 
 
   print "\n--MEANLINES--"
-  meanlines, meanline_stats = detect_meanlines(masked_image, corners, scale=scale, return_stats=True)
+  meanlines = detect_meanlines(masked_image, corners, scale=scale)
 
   timeStart("convert meanlines to geojson")
   meanlines_as_geojson = meanlines_to_geojson(meanlines)
@@ -94,26 +97,6 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   timeEnd("get roi and meanlines")
 
   if (stats_file):
-    import json
-    from lib.utilities import poly_area2D
-    from lib.quality_control import points_to_rho_theta
-
-    num_meanlines = len(meanlines)
-    corners_clockwise = [
-      corners["top_left"], corners["top_right"],
-      corners["bottom_right"], corners["bottom_left"]
-    ]
-    roi_area = poly_area2D(corners_clockwise)
-    _, roi_angle_top = points_to_rho_theta(corners["top_left"], corners["top_right"])
-    _, roi_angle_bottom = points_to_rho_theta(corners["bottom_right"], corners["bottom_left"])
-    theta_mode = meanline_stats["max_theta"]
-
-    Record.record("num_meanlines", num_meanlines)
-    Record.record("roi_area", roi_area)
-    Record.record("roi_angle_top", roi_angle_top)
-    Record.record("roi_angle_bottom", roi_angle_bottom)
-    Record.record("theta_mode", theta_mode)
-    
     Record.export_as_json(stats_file)
 
 if __name__ == '__main__':

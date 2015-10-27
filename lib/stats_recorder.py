@@ -1,7 +1,12 @@
 import json
 
 class Record:
+  active = False
   stats = {}
+
+  @classmethod
+  def activate(cls):
+    cls.active = True
 
   @classmethod
   def record(cls, key, value):

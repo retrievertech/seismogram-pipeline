@@ -1,7 +1,8 @@
+from debug import Debug
+from stats_recorder import Record
+
 import numpy as np
 from skimage.transform import hough_line, hough_line_peaks
-
-from debug import Debug
 from utilities import normalize
 
 def get_best_hough_lines(image, min_angle, max_angle, min_separation_distance,
@@ -23,7 +24,7 @@ def get_best_hough_lines(image, min_angle, max_angle, min_separation_distance,
   return line
 
 def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance,
-                        min_separation_angle, return_stats=None):
+                        min_separation_angle):
 
   angles = np.deg2rad(np.arange(min_angle, max_angle, 0.5))
   hough, angles, distances = hough_line(image, angles)
@@ -49,15 +50,11 @@ def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance,
       peaks[coord] = 1
     Debug.save_image("hough", "accumulator_peaks", peaks)
 
-  if (return_stats is None):
-    return lines
-  else:
+  if Record.active:
     max_theta_idx = get_max_theta_idx(hough)
-    stats = {
-      "max_theta_idx": max_theta_idx,
-      "max_theta": angles[max_theta_idx]
-    }
-    return (lines, stats)
+    Record.record("theta_mode", angles[max_theta_idx])
+
+  return lines
 
 def bin_hough(hough, rho_bin_size):
   binned_hough = np.zeros([int(hough.shape[0]/rho_bin_size), hough.shape[1]])

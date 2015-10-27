@@ -1,5 +1,6 @@
 from timer import timeStart, timeEnd
 from lib.debug import Debug
+from lib.stats_recorder import Record
 
 import numpy as np
 import cv2
@@ -133,6 +134,22 @@ def get_corners(lines, image = None):
       image_copy[outer_circles[corner_name]] = 0.0
       image_copy[inner_circles[corner_name]] = 1.0
     Debug.save_image("roi", "roi_corners", image_copy)
+
+  if Record.active:
+    from lib.utilities import poly_area2D
+    from lib.quality_control import points_to_rho_theta
+
+    corners_clockwise = [
+      corners["top_left"], corners["top_right"],
+      corners["bottom_right"], corners["bottom_left"]
+    ]
+    roi_area = poly_area2D(corners_clockwise)
+    _, roi_angle_top = points_to_rho_theta(corners["top_left"], corners["top_right"])
+    _, roi_angle_bottom = points_to_rho_theta(corners["bottom_right"], corners["bottom_left"])
+
+    Record.record("roi_area", roi_area)
+    Record.record("roi_angle_top", roi_angle_top)
+    Record.record("roi_angle_bottom", roi_angle_bottom)
 
   return corners
 
