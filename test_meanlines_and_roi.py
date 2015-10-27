@@ -36,15 +36,9 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   from lib.timer import timeStart, timeEnd
 
   from lib.load_image import get_grayscale_image, image_as_float
-  from skimage.morphology import medial_axis
   from lib.roi_detection import get_roi, corners_to_geojson
   from lib.polygon_mask import mask_image
   from lib.meanline_detection import detect_meanlines, meanlines_to_geojson
-  from lib.threshold import flatten_background
-  from lib.ridge_detection import find_ridges
-  from lib.binarization import binary_image
-  from lib.intersection_detection import find_intersections
-  from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features
 
   paths = {
