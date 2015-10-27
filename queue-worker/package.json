@@ -5,6 +5,7 @@
   "main": "process_queue.js",
   "dependencies": {
     "async": "1.4.2",
+    "event-stream": "3.3.2",
     "firebase": "2.3.1",
     "firebase-queue": "1.2.1",
     "mkdirp": "0.5.1",
