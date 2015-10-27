@@ -52,7 +52,7 @@ var processSeismo = function(filename, callback) {
     async.series([
       function(cb) { writeLog(seismoLogDir, log, cb); },
       function(cb) { uploadLog(filename, seismoLogDir, cb); },
-      function(cb) { rimraf(seismoLogDir); }
+      function(cb) { rimraf(seismoLogDir, cb); }
     ]);
 
     callback(err);

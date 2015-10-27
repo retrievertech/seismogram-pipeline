@@ -16,7 +16,7 @@ type=$3
 # create temporary directory to hold metadata
 dir=`mktemp -d /tmp/seismo.XXXXX` && \
 # save stats to metadata directory
-stats_path = "$dir/stats.json" && \
+stats_path="$dir/stats.json" && \
 echo "writing to $dir" && \
 sh set_seismo_status.sh $image_name 1 && \
 python get_all_metadata.py --image "$image_path" --output "$dir" --stats "$stats_path" && \
