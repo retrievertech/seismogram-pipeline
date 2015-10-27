@@ -171,6 +171,12 @@ def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
             low_threshold = 0.002, high_threshold = 0.006,
             convex_threshold = 0.00015, figures=True):
   '''
+  The values for min_sigma, max_sigma, and sigma_ratio are hardcoded,
+  but they ought to be a function of the scale parameter. They're related
+  to the minimum and maximum expected trace width in pixels.
+
+  If max_sigma is too small, the algorithm misses ridges of thick traces.
+  Need to do more thinking about how this function works.
 
   '''
   # num_scales is the number of scales at which to compute a difference of gaussians

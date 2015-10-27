@@ -58,9 +58,14 @@ var processSeismo = function(filename, callback) {
     callback(err);
   });
 
-  new_process.stdout.on("data", function(data) {
-    console.log("stdout: " + data);
-  });
+  // If we wanted progress callbacks, we could scrape
+  // these data events for meaningful tidbits, like
+  // the headers that get print out whenever we switch
+  // sections.
+  // 
+  // new_process.stdout.on("data", function(data) {
+  //   console.log("stdout: " + data);
+  // });
 }
 
 var writeLog = function(logDir, logContents, callback) {
