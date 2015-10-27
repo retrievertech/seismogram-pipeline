@@ -1,4 +1,7 @@
 #!/bin/bash
 cd /home/ubuntu/seismogram-pipeline && \
-git pull && \
-node ./queue-worker/process_queue.js
+sudo -H -u ubuntu bash -c 'git pull' && \
+sudo -H -u ubuntu bash -c 'node ./queue-worker/process_queue.js'
+
+# output of this script is written to:
+# cat /var/log/cloud-init-output.log
