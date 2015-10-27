@@ -24,6 +24,7 @@ from docopt import docopt
 def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, fix_seed=False):
   from lib.dir import ensure_dir_exists
   from lib.debug import Debug
+  from lib.stats_recorder import Record
 
   if debug_dir:
     Debug.set_directory(debug_dir)
@@ -105,28 +106,15 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
     roi_area = poly_area2D(corners_clockwise)
     _, roi_angle_top = points_to_rho_theta(corners["top_left"], corners["top_right"])
     _, roi_angle_bottom = points_to_rho_theta(corners["bottom_right"], corners["bottom_left"])
+    theta_mode = meanline_stats["max_theta"]
 
-    try:
-      with open(stats_file, "rw") as myfile:
-        data = myfile.read()
-        stats = json.loads(data)
-    except IOError:
-      stats = {
-        "num_meanlines":[],
-        "roi_area":[],
-        "roi_angle_top":[],
-        "roi_angle_bottom":[],
-        "theta_mode":[]
-      }
-
-    stats["num_meanlines"].append(num_meanlines)
-    stats["roi_area"].append(roi_area)
-    stats["roi_angle_top"].append(roi_angle_top)
-    stats["roi_angle_bottom"].append(roi_angle_bottom)
-    stats["theta_mode"].append(meanline_stats["max_theta"])
-
-    with open(stats_file, "w") as myfile:
-      json.dump(stats, myfile)
+    Record.record("num_meanlines", num_meanlines)
+    Record.record("roi_area", roi_area)
+    Record.record("roi_angle_top", roi_angle_top)
+    Record.record("roi_angle_bottom", roi_angle_bottom)
+    Record.record("theta_mode", theta_mode)
+    
+    Record.export_as_json(stats_file)
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
