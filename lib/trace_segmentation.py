@@ -202,15 +202,20 @@ def image_overlay(img, overlay, mask = None):
   images_combined = 0.5 * (img + overlay)
   return np.where(mask, img, images_combined)
 
-def segments_to_json(segments):
-  segment_iterator = segments.itervalues()
-  features = []
-  properties = {}
-  for seg in segment_iterator:
-    if seg.has_center_line:
-      features.append(seg.to_geojson_feature())
-      properties[seg.id] = seg.to_json_properties()
-  return (FeatureCollection(features), properties)
+# def segments_to_json(segments):
+#   segment_iterator = segments.itervalues()
+#   features = []
+#   properties = {}
+#   for seg in segment_iterator:
+#     if seg.has_center_line:
+#       features.append(seg.to_geojson_feature())
+#       properties[seg.id] = seg.to_json_properties()
+#   return (FeatureCollection(features), properties)
+
+def segments_to_geojson(segments):
+  geojson_line_segments = \
+    [seg.to_geojson_feature() for seg in segments.itervalues() if seg.has_center_line]
+  return FeatureCollection(geojson_line_segments)
 
 def get_ridge_line(ridges_h, ridges_v, region):
   '''

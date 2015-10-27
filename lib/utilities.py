@@ -13,6 +13,34 @@ from scipy.stats import percentileofscore
 from skimage.morphology import dilation, erosion
 # from threshold import make_background_thresh_fun
 
+def encode_labeled_image_as_rgb(labeled_image):
+  '''
+  Parameters
+  ------------
+  labeled_image : 2D numpy array of ints
+
+  Returns
+  --------
+  A 3D numpy array with the values of labeled_image encoded
+  into red, green, and blue channels.
+
+  '''
+
+  b = labeled_image % 256
+  g = (labeled_image / 256) % 256
+  r = (labeled_image / 256 / 256)
+  return np.dstack((r, g, b))
+
+def decode_rgb_to_labeled_image(rgb_image):
+  '''
+  Inverse of encode_labeled_image_as_rgb.
+
+  '''
+  r = rgb_image[:,:,0]
+  g = rgb_image[:,:,1]
+  b = rgb_image[:,:,2]
+  return r * 256 * 256 + g * 256 + b
+
 def local_min(image, min_distance=2):
   if np.amax(image) <= 1:
     image = np.uint8(image * 255)

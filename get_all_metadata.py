@@ -49,15 +49,17 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   from lib.ridge_detection import find_ridges
   from lib.binarization import binary_image
   from lib.intersection_detection import find_intersections
-  from lib.trace_segmentation import get_segments, segments_to_json
+  from lib.trace_segmentation import get_segments, segments_to_geojson
   from lib.geojson_io import save_features, save_json
+  from lib.utilities import encode_labeled_image_as_rgb
+  from scipy import misc
 
   paths = {
     "roi": out_dir+"/roi.json",
     "meanlines": out_dir+"/meanlines.json",
     "intersections": out_dir+"/intersections.json",
     "segments": out_dir+"/segments.json",
-    "segment_properties": out_dir+"/segment_properties.json",
+    "segment_regions": out_dir+"/segment_regions.png",
     "segment_assignments": out_dir+"/segment_assignments.json"
   }
 
@@ -156,21 +158,26 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
 
   print "\n--SEGMENTS--"
   timeStart("get segments")
-  segments = get_segments(img_gray, img_bin, img_skel, dist,
-                          intersection_image, ridges_h, ridges_v)
+  segments, labeled_regions = \
+    get_segments(img_gray, img_bin, img_skel, dist, intersection_image,
+                 ridges_h, ridges_v, figure=True)
   timeEnd("get segments")
 
-  timeStart("convert segments to geojson + json")
-  segments_as_geojson, properties_as_json = segments_to_json(segments)
-  timeEnd("convert segments to geojson + json")
+  timeStart("encode labels as rgb values")
+  rgb_segments = encode_labeled_image_as_rgb(labeled_regions)
+  timeEnd("encode labels as rgb values")
 
-  timeStart("saving segments as geojson")
+  timeStart("save segment regions")
+  misc.imsave(paths["segment_regions"], rgb_segments)
+  timeEnd("save segment regions")
+
+  timeStart("convert centerlines to geojson")
+  segments_as_geojson = segments_to_geojson(segments)
+  timeEnd("convert centerlines to geojson")
+
+  timeStart("saving centerlines as geojson")
   save_features(segments_as_geojson, paths["segments"])
-  timeEnd("saving segments as geojson")
-
-  timeStart("saving segment properties as json")
-  save_json(properties_as_json, paths["segment_properties"])
-  timeEnd("saving segment properties as json")
+  timeEnd("saving centerlines as geojson")
 
   if (stats_file):
     Record.export_as_json(stats_file)
