@@ -13,11 +13,13 @@ image_name=$1
 image_path=$2
 # "dev" is development, everything else is production
 type=$3
-
+# create temporary directory to hold metadata
 dir=`mktemp -d /tmp/seismo.XXXXX` && \
+# save stats to metadata directory
+stats_path = "$dir/stats.json" && \
 echo "writing to $dir" && \
 sh set_seismo_status.sh $image_name 1 && \
-python get_all_metadata.py --image "$image_path" --output "$dir" && \
+python get_all_metadata.py --image "$image_path" --output "$dir" --stats "$stats_path" && \
 sh copy_to_s3.sh $image_name $dir metadata $type && \
 sh set_seismo_status.sh $image_name 3 && \
 rm -rf $dir
