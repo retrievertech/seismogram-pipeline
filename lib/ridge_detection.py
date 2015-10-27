@@ -167,7 +167,7 @@ def create_sigma_list(min_sigma, sigma_ratio, scales):
   return min_sigma * np.power(sigma_ratio, scales)
 
 def find_ridges(img, dark_pixels, min_sigma = 0.7071, max_sigma = 30,
-            sigma_ratio = 1.6, min_ridge_length = 15,
+            sigma_ratio = 1.9, min_ridge_length = 15,
             low_threshold = 0.002, high_threshold = 0.006,
             convex_threshold = 0.00015, figures=True):
   '''
