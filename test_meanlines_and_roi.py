@@ -4,7 +4,7 @@ Description:
   Test just meanline and ROI detection, and save some statistics.
 
 Usage:
-  pipeline.py --image <filename> --output <directory> [--stats <directory>] [--scale <scale>] [--debug <directory>] [--fix-seed]
+  pipeline.py --image <filename> --output <directory> [--stats <filename>] [--scale <scale>] [--debug <directory>] [--fix-seed]
   pipeline.py -h | --help
 
 Options:

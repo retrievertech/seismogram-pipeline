@@ -5,13 +5,15 @@ Description:
   for a single seismogram.
 
 Usage:
-  pipeline.py --image <filename> --output <directory> [--scale <scale>] [--debug <directory>] [--fix-seed]
+  pipeline.py --image <filename> --output <directory> [--stats <filename>] [--scale <scale>] [--debug <directory>] [--fix-seed]
   pipeline.py -h | --help
 
 Options:
   -h --help             Show this screen.
   --image <filename>    Filename of seismogram.
   --output <directory>  Save metadata in <directory>.
+  --stats <filename>    Write statistics (e.g. number of meanlines, size of ROI) to <filename>.
+                        If <filename> already exists, stats will be appended, not overwritten.
   --scale <scale>       1 for a full-size seismogram, 0.25 for quarter-size, etc. [default: 1]
   --debug <directory>   Save intermediate steps as images for inspection in <directory>.
   --fix-seed            Fix random seed.
@@ -20,15 +22,19 @@ Options:
 
 from docopt import docopt
 
-def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
+def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, fix_seed=False):
   from lib.dir import ensure_dir_exists
   from lib.debug import Debug
+  from lib.stats_recorder import Record
 
   if debug_dir:
     Debug.set_directory(debug_dir)
 
   if fix_seed:
     Debug.set_seed(1234567890)
+
+  if stats_file:
+    Record.activate()
 
   ensure_dir_exists(out_dir)
 
@@ -166,6 +172,9 @@ def analyze_image(in_file, out_dir, scale=1, debug_dir=False, fix_seed=False):
   save_json(properties_as_json, paths["segment_properties"])
   timeEnd("saving segment properties as json")
 
+  if (stats_file):
+    Record.export_as_json(stats_file)
+
   #return (img_gray, ridges, img_bin, intersections, img_seg)
   # return segments
   # detect center lines
@@ -180,11 +189,12 @@ if __name__ == '__main__':
   arguments = docopt(__doc__)
   in_file = arguments["--image"]
   out_dir = arguments["--output"]
+  stats_file = arguments["--stats"]
   scale = float(arguments["--scale"])
   debug_dir = arguments["--debug"]
   fix_seed = arguments["--fix-seed"]
 
   if (in_file and out_dir):
-    segments = analyze_image(in_file, out_dir, scale, debug_dir, fix_seed)
+    segments = analyze_image(in_file, out_dir, stats_file, scale, debug_dir, fix_seed)
   else:
     print(arguments)
