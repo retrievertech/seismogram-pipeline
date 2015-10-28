@@ -6,6 +6,7 @@ Created on Thu Jan 29 14:38:19 2015
 """
 
 from timer import timeStart, timeEnd
+from stats_recorder import Record
 
 import numpy as np
 from matplotlib.pyplot import imread
@@ -152,7 +153,9 @@ def find_intersections(image_bin, image_skel=None, dist=None,
   intersections, degrees = find_junctions(image_skel)
   timeEnd("find junctions")
 
-  print "found %s junctions" % len(intersections)
+  num_intersections = len(intersections)
+  print "found %s junctions" % num_intersections
+  Record.record("num_intersections", num_intersections)
 
   radii = get_intersection_sizes(intersections, dist)
   if figure:
