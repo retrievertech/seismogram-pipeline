@@ -55,7 +55,14 @@ var processSeismo = function(filename, callback) {
       function(cb) { rimraf(seismoLogDir, cb); }
     ]);
 
-    callback(err);
+    if (err) {
+      // not totally sure what kind of error this would be
+      callback(err);
+      return;
+    }
+
+    var pipelineFailure = checkFailure(stderr);
+    callback(pipelineFailure);
   });
 
   // If we wanted progress callbacks, we could scrape
@@ -66,6 +73,14 @@ var processSeismo = function(filename, callback) {
   // new_process.stdout.on("data", function(data) {
   //   console.log("stdout: " + data);
   // });
+}
+
+var checkFailure = function(stderr) {
+  // TODO: More robust test for python script error
+  if (/Traceback/.test(stderr)) {
+    return true;
+  }
+  return;
 }
 
 var writeLog = function(logDir, logContents, callback) {
