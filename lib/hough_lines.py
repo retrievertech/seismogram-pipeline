@@ -60,6 +60,12 @@ def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance,
     # max_theta_idx = get_max_theta_idx(hough)
     # Record.record("theta_mode", angles[max_theta_idx])
 
+    # in radians
+    average_meanline_angle = np.mean(peak_angles)
+    std_deviation_meanline_angle = np.std(peak_angles)
+
+    Record.record("average_meanline_angle", float("%.4f" % average_meanline_angle))
+    Record.record("std_deviation_meanline_angle", float("%.4f" % std_deviation_meanline_angle))
 
   return lines
 
