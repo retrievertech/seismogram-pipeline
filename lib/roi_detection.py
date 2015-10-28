@@ -146,10 +146,14 @@ def get_corners(lines, image = None):
     roi_area = poly_area2D(corners_clockwise)
     _, roi_angle_top = points_to_rho_theta(corners["top_left"], corners["top_right"])
     _, roi_angle_bottom = points_to_rho_theta(corners["bottom_right"], corners["bottom_left"])
+    _, roi_angle_left = points_to_rho_theta(corners["top_left"], corners["bottom_left"])
+    _, roi_angle_right = points_to_rho_theta(corners["bottom_right"], corners["top_right"])
 
     Record.record("roi_area", roi_area)
-    Record.record("roi_angle_top", roi_angle_top)
-    Record.record("roi_angle_bottom", roi_angle_bottom)
+    Record.record("roi_angle_top", float("%.4f" % roi_angle_top))
+    Record.record("roi_angle_bottom", float("%.4f" % roi_angle_bottom))
+    Record.record("roi_angle_left", float("%.4f" % roi_angle_left))
+    Record.record("roi_angle_right", float("%.4f" % roi_angle_right))
 
   return corners
 
