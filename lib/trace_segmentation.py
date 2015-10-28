@@ -7,6 +7,7 @@ Created on Wed Feb 25 13:58:26 2015
 
 from lib.timer import timeStart, timeEnd
 from lib.debug import Debug
+from lib.stats_recorder import Record
 
 import numpy as np
 from skimage.morphology import (medial_axis, watershed, binary_erosion, square)
@@ -97,13 +98,15 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
 
   Debug.save_image("segments", "watershed", image_segments)
 
-  print "found %s segments" % np.amax(image_segments)
+  # subtract 1 for the background segment
+  num_traces = num_segments - 1
+  print "found %s segments" % num_traces
+  Record.record("num_segments", num_traces)
 
   segments = img_seg_to_seg_objects(image_segments, num_segments, ridges_h, ridges_v, img_gray)
 
   if Debug.active:
     from lib.segment_coloring import gray2prism
-    num_traces = np.amax(image_segments)
     # try to assign different gray values to neighboring segments
     traces_colored = (image_segments + num_traces * (image_segments % 4)) / float(4 * num_traces)
     # store a background mask
