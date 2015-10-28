@@ -51,8 +51,15 @@ def get_all_hough_lines(image, min_angle, max_angle, min_separation_distance,
     Debug.save_image("hough", "accumulator_peaks", peaks)
 
   if Record.active:
-    max_theta_idx = get_max_theta_idx(hough)
-    Record.record("theta_mode", angles[max_theta_idx])
+    # Thought get_max_theta_idx might be a useful way to filter
+    # real meanlines from spurious meanlines, but it's not
+    # reliable when the image is saturated with incorrect
+    # meanlines. Filtering lines based on the ROI angle
+    # was more effective.
+
+    # max_theta_idx = get_max_theta_idx(hough)
+    # Record.record("theta_mode", angles[max_theta_idx])
+
 
   return lines
 
@@ -65,6 +72,11 @@ def bin_hough(hough, rho_bin_size):
   return binned_hough
 
 def get_max_theta_idx(hough):
+  '''
+  Returns the column (theta) of the hough transform with the
+  most above-threshold bins.
+
+  '''
   thresh_hough = threshold_hough(hough, 0.2*np.amax(hough))
   Debug.save_image("hough", "thresholded_accumulator", normalize(thresh_hough))
   # find the column with the most above-threshold bins
