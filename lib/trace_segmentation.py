@@ -118,6 +118,36 @@ def get_segments(img_gray, img_bin, img_skel, dist, img_intersections,
     traces_colored[background] = 0
     Debug.save_image("segments", "segment_regions", traces_colored)
 
+  if Record.active:
+    timeStart("calculate histograms of segment sizes")
+    # last bin includes both left and right boundaries, so add 1 to right-most bin
+    segment_bins = np.arange(num_segments+1)
+    segment_sizes, _ = np.histogram(image_segments.flatten(), bins=segment_bins)
+    
+    # trim off the "background" segment
+    segment_sizes = segment_sizes[1:]
+
+    max_segment_size = np.amax(segment_sizes)
+    # there are no size 0 segments
+    segment_size_bins = np.arange(1, max_segment_size+1)
+    hist_of_sizes, _ = np.histogram(segment_sizes, bins=segment_size_bins)
+    
+    Record.record("segment_region_hist", hist_of_sizes.tolist())
+    timeEnd("calculate histograms of segment sizes")
+
+    timeStart("calculate histogram of centerlines")
+    centerlines = [seg.center_line for seg in segments.itervalues() if seg.has_center_line]
+    Record.record("num_segments_with_centerlines", len(centerlines))
+
+    centerline_lengths = map(lambda line: len(line.coords), centerlines)
+
+    max_centerline_length = np.amax(centerline_lengths)
+    # there are no size 0 centerlines
+    centerline_bins = np.arange(1, max_centerline_length+1)
+    hist_of_centerlines, _ = np.histogram(centerline_lengths, bins=centerline_bins)
+    Record.record("segment_centerline_hist", hist_of_centerlines.tolist())
+    timeEnd("calculate histogram of centerlines")
+
   if figure == False: 
     return segments
   else:
