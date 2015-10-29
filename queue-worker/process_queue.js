@@ -20,15 +20,15 @@ var queue = new Queue(queueRef, opts, function(data, progress, resolve, reject) 
   console.log(data);
 
   var filename = data.filename;
-  processSeismo(filename, function(err) {
+  processSeismo(filename, function(err, seismoStatus) {
+    setStatus(filename, seismoStatus);
     if (err) {
       console.log("failed to process "+filename+"; marking job rejected");
-      setStatus(filename, status.failed);
       reject(err);
-      return;
+    } else {
+      console.log("successfully processed "+filename+"; marking job resolved");
+      resolve({ status: seismoStatus });
     }
-    console.log("successfully processed "+filename+"; marking job resolved");
-    resolve();
   });
 });
 
@@ -56,18 +56,24 @@ var processSeismo = function(filename, callback) {
     ]);
 
     if (err) {
-      // not totally sure what kind of error this would be
+      // This shouldn't ever happen. It would represent an error
+      // when attempting to execute process_task.sh
       callback(err);
       return;
     }
 
-    var pipelineFailure = checkFailure(stderr);
-    callback(pipelineFailure);
+    var seismoStatus = checkStatus(stderr);
+    if (seismoStatus === status.failed) {
+      callback(new Error("Pipeline failed to complete."), seismoStatus);
+      return;
+    }
+
+    callback(null, seismoStatus);
   });
 
   // If we wanted progress callbacks, we could scrape
   // these data events for meaningful tidbits, like
-  // the headers that get print out whenever we switch
+  // the headers that get printed out whenever we switch
   // sections.
   // 
   // new_process.stdout.on("data", function(data) {
@@ -75,12 +81,25 @@ var processSeismo = function(filename, callback) {
   // });
 }
 
-var checkFailure = function(stderr) {
-  // TODO: More robust test for python script error
+var checkStatus = function(stderr) {
   if (/Traceback/.test(stderr)) {
-    return true;
+    return status.failed;
   }
-  return;
+
+  var seismoStatus;
+
+  try {
+    var statusName = /STATUS>>>(.+)<<</.exec(stderr)[1];
+    seismoStatus = status[statusName];
+  } catch(e) {
+    console.log(e);
+  }
+
+  if (typeof seismoStatus === "undefined") {
+    return status.failed;
+  }
+
+  return seismoStatus;
 }
 
 var writeLog = function(logDir, logContents, callback) {

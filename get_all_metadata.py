@@ -201,6 +201,16 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   if (stats_file):
     Record.export_as_json(stats_file)
 
+  # TODO: refactor this into some sort of status module.
+  # For now, since this is our only problematic status,
+  # it's hard to know what to generalize. Eventually
+  # we might want to flag several different statuses
+  # for specific conditions.
+  if (len(segments) > 10000):
+    print "STATUS>>>problematic<<<"
+  else:
+    print "STATUS>>>complete<<<"
+
 if __name__ == '__main__':
   arguments = docopt(__doc__)
   in_file = arguments["--image"]
