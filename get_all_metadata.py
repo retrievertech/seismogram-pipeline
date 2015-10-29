@@ -53,6 +53,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   from lib.geojson_io import save_features, save_json
   from lib.utilities import encode_labeled_image_as_rgb
   from scipy import misc
+  import numpy as np
 
   paths = {
     "roi": out_dir+"/roi.json",
@@ -91,6 +92,12 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   timeEnd("mask image")
 
   Debug.save_image("main", "masked_image", masked_image.filled(0))
+
+  if Record.active:
+    non_masked_values = 255 * masked_image.compressed()
+    bins = np.arange(257)
+    image_hist, _ = np.histogram(non_masked_values, bins=bins)
+    Record.record("roi_intensity_hist", image_hist.tolist())
 
 
   print "\n--MEANLINES--"
