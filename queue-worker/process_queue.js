@@ -27,7 +27,10 @@ var queue = new Queue(queueRef, opts, function(data, progress, resolve, reject) 
       reject(err);
     } else {
       console.log("successfully processed "+filename+"; marking job resolved");
-      resolve({ status: seismoStatus });
+      resolve({
+        status: seismoStatus,
+        filename: filename
+      });
     }
   });
 });
