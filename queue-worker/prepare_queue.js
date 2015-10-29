@@ -16,7 +16,7 @@ var tasksRef = rootRef.child("queue/tasks");
 var seismoSpec = {
   "start_state": null, // use this spec for all tasks
   "in_progress_state": "in_progress",
-  "finished_state": null, // remove completed tasks
+  "finished_state": "complete",
   "error_state": "error",
   "timeout": 1000*60*30, // 30 minutes
   "retries": 0 // don't retry
