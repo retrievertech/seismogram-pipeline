@@ -62,7 +62,7 @@ var processSeismo = function(filename, callback) {
       return;
     }
 
-    var seismoStatus = checkStatus(stdout, stderr);
+    var seismoStatus = checkStatus(log);
     if (seismoStatus === status.failed) {
       callback(new Error("Pipeline failed to complete."), seismoStatus);
       return;
@@ -81,15 +81,15 @@ var processSeismo = function(filename, callback) {
   // });
 }
 
-var checkStatus = function(stdout, stderr) {
-  if (/Traceback/.test(stderr)) {
+var checkStatus = function(log) {
+  if (/Traceback/.test(log)) {
     return status.failed;
   }
 
   var seismoStatus;
 
   try {
-    var statusName = /STATUS>>>(.+)<<</.exec(stdout)[1];
+    var statusName = /STATUS>>>(.+)<<</.exec(log)[1];
     seismoStatus = status[statusName];
   } catch(e) {
     console.log(e);
