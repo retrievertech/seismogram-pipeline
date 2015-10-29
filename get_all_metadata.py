@@ -179,9 +179,6 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   save_features(segments_as_geojson, paths["segments"])
   timeEnd("saving centerlines as geojson")
 
-  if (stats_file):
-    Record.export_as_json(stats_file)
-
   #return (img_gray, ridges, img_bin, intersections, img_seg)
   # return segments
   # detect center lines
@@ -190,7 +187,12 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
 
   # output data
 
-  timeEnd("get all metadata")
+  time_elapsed = timeEnd("get all metadata")
+
+  Record.record("time_elapsed", float("%.2f" % time_elapsed))
+
+  if (stats_file):
+    Record.export_as_json(stats_file)
 
 if __name__ == '__main__':
   arguments = docopt(__doc__)
