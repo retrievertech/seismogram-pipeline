@@ -3,40 +3,46 @@ from time import time
 
 timeDict = {}
 depth = 0
-justCalledTimeStart = False
+
+# keep track of whether timers are being nested
+timer_open = False
 
 def timeStart(key):
-  global depth, justCalledTimeStart
+  global depth, timer_open
 
   timeDict[key] = time()
 
-  printStart(key, justCalledTimeStart)
+  printStart(key, timer_open)
 
   depth += 1
-  justCalledTimeStart = True
+  timer_open = True
 
 def timeEnd(key):
-  global depth, justCalledTimeStart
+  global depth, timer_open
 
   depth -= 1
 
-  printEnd(key, justCalledTimeStart)
+  time_elapsed = time() - timeDict[key]
   del timeDict[key]
+  
+  printEnd(key, time_elapsed, timer_open)
 
-  justCalledTimeStart = False
+  timer_open = False
 
-def printStart(key, justCalledTimeStart):
-  if (justCalledTimeStart is True):
+  return time_elapsed
+
+def printStart(key, timer_open):
+  if (timer_open is True):
     sys.stdout.write("\n")
 
   sys.stdout.write(getIndent() + key + " ... ")
   sys.stdout.flush()
 
-def printEnd(key, justCalledTimeStart):
-  if (justCalledTimeStart is False):
+def printEnd(key, time_elapsed, timer_open):
+  if (timer_open is False):
     sys.stdout.write(getIndent())
 
-  sys.stdout.write(str(time() - timeDict[key]) + "s \n")
+  sys.stdout.write(str(time_elapsed) + "s \n")
 
 def getIndent():
   return ''.join(["  " for i in range(depth)])
