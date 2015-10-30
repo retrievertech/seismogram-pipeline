@@ -59,6 +59,7 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
     "roi": out_dir+"/roi.json",
     "meanlines": out_dir+"/meanlines.json",
     "intersections": out_dir+"/intersections.json",
+    "intersections_raster": out_dir+"/intersections_raster.png",
     "segments": out_dir+"/segments.json",
     "segment_regions": out_dir+"/segment_regions.png",
     "segment_assignments": out_dir+"/segment_assignments.json"
@@ -161,7 +162,9 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   timeEnd("convert to image")
 
   Debug.save_image("intersections", "intersections", intersection_image)
-
+  timeStart("save intersections raster")
+  misc.imsave(paths["intersections_raster"], intersection_image)
+  timeEnd("save intersections raster")
 
   print "\n--SEGMENTS--"
   timeStart("get segments")
