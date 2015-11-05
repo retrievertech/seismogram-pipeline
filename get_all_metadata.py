@@ -209,7 +209,8 @@ def analyze_image(in_file, out_dir, stats_file=False, scale=1, debug_dir=False, 
   # it's hard to know what to generalize. Eventually
   # we might want to flag several different statuses
   # for specific conditions.
-  if (len(segments) > 10000):
+  max_segments_reasonable = 11000
+  if (len(segments) > max_segments_reasonable):
     print "STATUS>>>problematic<<<"
   else:
     print "STATUS>>>complete<<<"
