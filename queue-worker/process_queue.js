@@ -9,7 +9,7 @@ var Queue = require('firebase-queue'),
 // post machine presence to firebase
 require("./presence");
 
-var rootRef = require("./rootRef");
+var rootRef = require("./root_ref");
 var status = require("./status");
 var logPath = __dirname + "/logs";
 

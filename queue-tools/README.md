@@ -13,3 +13,5 @@
 `get_filtered_filenames.sh` - Filters the list of seismograms that exist on s3, and writes the filtered list to `filtered_files.txt`.
 
 `select_random_files.py` - Samples a number of lines from a file at random. Useful for getting random subsets of filenames for testing.
+
+`root_ref.js` - The root firebase reference used by `prepare_queue.js`. Duplicate of `queue-worker/root_ref.js`.

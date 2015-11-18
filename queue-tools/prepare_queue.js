@@ -9,7 +9,7 @@
 var es = require('event-stream');
 var async = require("async");
 
-var rootRef = require("../queue-worker/rootRef");
+var rootRef = require("./root_ref");
 var specsRef = rootRef.child("queue/specs");
 var tasksRef = rootRef.child("queue/tasks");
 

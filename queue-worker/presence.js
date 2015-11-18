@@ -1,5 +1,5 @@
 var metadata = require('node-ec2-metadata');
-var rootRef = require("./rootRef");
+var rootRef = require("./root_ref");
 
 var amOnline = rootRef.child(".info/connected");
 
