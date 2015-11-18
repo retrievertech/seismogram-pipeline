@@ -15,3 +15,7 @@
 `select_random_files.py` - Samples a number of lines from a file at random. Useful for getting random subsets of filenames for testing.
 
 `root_ref.js` - The root firebase reference used by `prepare_queue.js`. Duplicate of `queue-worker/root_ref.js`.
+
+`set_edited_seismogram_status.sh` - For each seismogram in a list, set its status to "edited". Useful for correcting overwritten statuses.
+
+`mark_errors_as_not_started.js` - Reset the status of every error'd task in the firebase queue so that they're ready for re-processing.
