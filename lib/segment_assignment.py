@@ -70,7 +70,7 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
             dist = "null"
 
         for domain_check in xrange(len(meanline_database[which_meanline]["domain"])):
-            overlapping = list(set(range(meanline_database[which_meanline]["domain"][domain_check][0], meanline_database[which_meanline]["domain"][domain_check][1])).intersection(range(int(domain[seg_count][0]), int(domain[seg_count][1]+1))))
+            overlapping = list(set(range(int(meanline_database[which_meanline]["domain"][domain_check][0]), int(meanline_database[which_meanline]["domain"][domain_check][1]))).intersection(range(int(domain[seg_count][0]), int(domain[seg_count][1]+1))))
             if len(overlapping) != 0:
                 seg_isin.append(meanline_database[which_meanline]["segments"][domain_check])
             overlap_points += len(overlapping)
@@ -109,7 +109,7 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
         certain = []
         for timings in meanline_timing:
             timing_list = []
-            timing_guess = range(segment_data["features"][timings]["geometry"]["coordinates"][0][0], 15000, 232)
+            timing_guess = range(int(segment_data["features"][timings]["geometry"]["coordinates"][0][0]), 15000, 232)
             number_included = 0
             for comb in meanline_timing:
                 for guesses in timing_guess:
@@ -161,7 +161,7 @@ def assign_segments_to_meanlines(segments, meanlines, segment_data):
         for meanline_remaining in xrange(len(meanline_comp)):
             overlap_point = 0
             for domain_check in xrange(len(meanline_database[meanline_remaining]["domain"])):
-                overlapping = list(set(range(meanline_database[meanline_remaining]["domain"][domain_check][0], meanline_database[meanline_remaining]["domain"][domain_check][1])).intersection(range(int(domain[remaining][0]), int(domain[remaining][1]+1))))
+                overlapping = list(set(range(int(meanline_database[meanline_remaining]["domain"][domain_check][0]), int(meanline_database[meanline_remaining]["domain"][domain_check][1]))).intersection(range(int(domain[remaining][0]), int(domain[remaining][1]+1))))
                 if len(overlapping) != 0:
                     overlap_point += len(overlapping)
             meanline_overlap.append(overlap_point)
