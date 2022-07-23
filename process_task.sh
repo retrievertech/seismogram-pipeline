@@ -15,7 +15,7 @@ dir=`mktemp -d /tmp/seismo.XXXXX` && \
 image_path="$dir/$image_name"
 
 echo "downloading $image_name to $image_path" && \
-aws s3 cp s3://WWSSN_Scans/$image_name --region us-east-1 "$image_path" && \
+aws s3 cp s3://WWSSN_Scans/$image_name --region us-east-1 --profile seismo "$image_path" && \
 echo "invoking pipeline" && \
 sh get_all_metadata_s3.sh $image_name "$image_path"
 echo "cleaning up" && \

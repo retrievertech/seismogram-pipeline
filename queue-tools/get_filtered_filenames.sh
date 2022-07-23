@@ -6,7 +6,7 @@
 # I haven't tested the latest version of this script,
 # but I have tested the regexs.
 
-aws s3 ls "s3://WWSSN_Scans" --region us-east-1 > ls_WWSSN_Scans.txt
+aws s3 ls "s3://WWSSN_Scans" --region us-east-1 --profile seismo > ls_WWSSN_Scans.txt
 
 regex1='s/.*\s.*\s\([0-9]\{4\}[7-9][0-9]_[0-9]\{4\}_[0-9]\{4\}_0[456]\.png\).*/\1/p'
 # get all filenames of the form xxxx[# >= 70]_xxxx_xxxx_[04, 05, or 06].png

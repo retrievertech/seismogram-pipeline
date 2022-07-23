@@ -7,7 +7,7 @@
 # where edited_files.txt is a list of filenames that ought to have
 # status "edited". You can generate edited_files.txt by running
 #
-#   aws s3 ls s3://wwssn-edited-metadata > edited_files.txt
+#   aws s3 ls s3://wwssn-edited-metadata --profile seismo > edited_files.txt
 #
 # and then editing the resulting file so that each line is
 # exactly one filename:
