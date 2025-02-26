@@ -3,7 +3,7 @@
 # set the processing status of a seismogram
 # (hit the server endpoint, which updates the database)
 #
-#   sh set_seismo_status.sh <image_name> <status>
+#   sh set_seismo_status.sh <image_name> <status> [<dev>]
 #
 
 # node server
@@ -22,4 +22,12 @@ image_name=$1
 #  4: edited
 status=$2
 
-wget --user $user --password $pass $server/processing/setstatus/$image_name/$status -O /dev/null
+# "dev" indicates development mode
+# production otherwise
+type=$3
+
+if [ "$type" != "dev" ]; then
+  wget --user $user --password $pass $server/processing/setstatus/$image_name/$status -O /dev/null
+else
+  wget --user $user --password $pass http://localhost:3000/processing/setstatus/$image_name/$status -O /dev/null
+fi

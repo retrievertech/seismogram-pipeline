@@ -21,5 +21,5 @@ echo "writing to $dir" && \
 sh set_seismo_status.sh $image_name 1 && \
 python get_all_metadata.py --image "$image_path" --output "$dir" --stats "$stats_path" && \
 sh copy_to_s3.sh $image_name $dir metadata $type && \
-sh set_seismo_status.sh $image_name 3 && \
+sh set_seismo_status.sh $image_name 3 $type && \
 rm -rf $dir
